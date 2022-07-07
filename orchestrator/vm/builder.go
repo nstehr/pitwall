@@ -13,8 +13,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func buildFilesystemFromImage(image string) {
-	ctx := context.Background()
+func buildFilesystemFromImage(ctx context.Context, image string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
