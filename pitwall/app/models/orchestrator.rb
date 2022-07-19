@@ -1,0 +1,2 @@
+class Orchestrator < ApplicationRecord
+end
