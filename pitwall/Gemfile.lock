@@ -66,9 +66,13 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
+    amq-protocol (2.3.2)
     bootsnap (1.12.0)
       msgpack (~> 1.2)
     builder (3.2.4)
+    bunny (2.19.0)
+      amq-protocol (~> 2.3, >= 2.3.1)
+      sorted_set (~> 1, >= 1.0.2)
     concurrent-ruby (1.1.10)
     crass (1.0.6)
     debug (1.6.1)
@@ -143,8 +147,22 @@ GEM
       thor (~> 1.0)
       zeitwerk (~> 2.5)
     rake (13.0.6)
+    rbtree (0.4.5)
     reline (0.3.1)
       io-console (~> 0.5)
+    serverengine (2.0.7)
+      sigdump (~> 0.2.2)
+    set (1.0.2)
+    sigdump (0.2.4)
+    sneakers (2.11.0)
+      bunny (~> 2.12)
+      concurrent-ruby (~> 1.0)
+      rake
+      serverengine (~> 2.0.5)
+      thor
+    sorted_set (1.0.3)
+      rbtree
+      set (~> 1.0)
     sqlite3 (1.4.4)
     strscan (3.0.3)
     thor (1.2.1)
@@ -161,9 +179,11 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap
+  bunny
   debug
   puma (~> 5.0)
   rails (~> 7.0.3, >= 7.0.3.1)
+  sneakers
   sqlite3 (~> 1.4)
   tzinfo-data
 

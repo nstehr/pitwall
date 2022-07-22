@@ -1,0 +1,2 @@
+require 'sneakers'
+Sneakers.configure()

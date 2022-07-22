@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/nstehr/pitwall/orchestrator/vm"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var (
@@ -29,6 +30,7 @@ func main() {
 	flag.Parse()
 
 	verifyFirecrackerExists()
+	signalOrchestratorAlive()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
@@ -62,5 +64,46 @@ func verifyFirecrackerExists() {
 		log.Fatalf("Binary, %q, is a directory", firecrackerBinary)
 	} else if finfo.Mode()&executableMask == 0 {
 		log.Fatalf("Binary, %q, is not executable. Check permissions of binary", firecrackerBinary)
+	}
+}
+
+func signalOrchestratorAlive() {
+	rabbitUser := "guest"
+	if envVar := os.Getenv("RABBIT_USER"); envVar != "" {
+		rabbitUser = envVar
+	}
+	rabbitPass := "guest"
+	if envVar := os.Getenv("RABBIT_PASS"); envVar != "" {
+		rabbitPass = envVar
+	}
+	rabbitServer := "localhost"
+	if envVar := os.Getenv("RABBIT_SERVER"); envVar != "" {
+		rabbitServer = envVar
+	}
+	rabbitPort := "5672"
+	if envVar := os.Getenv("RABBIT_PORT"); envVar != "" {
+		rabbitPort = envVar
+	}
+
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", rabbitUser, rabbitPass, rabbitServer, rabbitPort))
+	if err != nil {
+		log.Fatal("Could not connect to rabbitMQ broker")
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	defer ch.Close()
+
+	err = ch.Publish(
+		"pitwall.orchestration", // exchange
+		"orchestrator.health",   // routing key
+		false,                   // mandatory
+		false,                   // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte("alive"),
+		})
+	if err != nil {
+		log.Fatal("Failed to publish alive message")
 	}
 }
