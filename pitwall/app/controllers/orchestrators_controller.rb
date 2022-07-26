@@ -12,7 +12,7 @@ class OrchestratorsController < ApplicationController
     def create
         @orchestrator = Orchestrator.create(
             name: params[:name],
-            address: params[:address]
+            status: params[:status]
         )
         render json: @orchestrator
     end 
@@ -21,7 +21,7 @@ class OrchestratorsController < ApplicationController
         @orchestrator = Orchestrator.find(params[:id])
         @orchestrator.update(
             name: params[:name],
-            address: params[:address]
+            status: params[:status]
         )
         render json: @orchestrator
     end 

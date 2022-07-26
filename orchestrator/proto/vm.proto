@@ -12,7 +12,3 @@ message VM {
     string imageName = 2;
     string status = 3;
 }
-
-service VMService {
-    rpc CreateVM(CreateVMRequest) returns (stream VM) {} 
-}

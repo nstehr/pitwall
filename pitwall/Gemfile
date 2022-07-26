@@ -39,6 +39,7 @@ gem "bootsnap", require: false
 # rabbitmq gems
 gem 'sneakers'
 gem 'bunny'
+gem 'google-protobuf'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
