@@ -6,5 +6,6 @@
 namespace :proto do 
     task :generate do
         sh "protoc --proto_path=../orchestrator/proto --ruby_out=lib/protos ../orchestrator/proto/orchestrator.proto"
+        sh "protoc --proto_path=../orchestrator/proto --ruby_out=lib/protos ../orchestrator/proto/vm.proto"
     end
 end

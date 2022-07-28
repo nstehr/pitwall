@@ -3,8 +3,8 @@ package vm
 import (
 	"archive/tar"
 	"context"
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,9 +29,9 @@ func buildFilesystemFromImage(ctx context.Context, image string) {
 		panic(err)
 	}
 
-	fmt.Println(imgInspect.Config.Entrypoint)
-	fmt.Println(imgInspect.Config.Cmd)
-	fmt.Println(imgInspect.RootFS.Type)
+	log.Println(imgInspect.Config.Entrypoint)
+	log.Println(imgInspect.Config.Cmd)
+	log.Println(imgInspect.RootFS.Type)
 
 	rc, err := cli.ImageSave(ctx, []string{image})
 	if err != nil {

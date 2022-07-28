@@ -7,8 +7,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func SignalOrchestratorAlive(name string) error {
-	ctx := context.Background()
+func SignalOrchestratorAlive(ctx context.Context, name string) error {
 	orchestrator := Orchestrator{Name: name, Status: "UP"}
 	out, err := proto.Marshal(&orchestrator)
 	if err != nil {

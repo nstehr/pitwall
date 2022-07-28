@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/nstehr/pitwall/orchestrator/orchestrator"
+	"github.com/nstehr/pitwall/orchestrator/vm"
 )
 
 var (
@@ -35,7 +37,11 @@ func main() {
 	}
 
 	verifyFirecrackerExists()
-	orchestrator.SignalOrchestratorAlive(*name)
+	ctx := context.Background()
+	orchestrator.SignalOrchestratorAlive(ctx, *name)
+
+	_, err := vm.NewManager(*name)
+	log.Println(err)
 
 	// Clean exit.
 	sig := make(chan os.Signal, 1)
