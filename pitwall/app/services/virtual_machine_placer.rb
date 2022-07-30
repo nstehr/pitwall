@@ -9,14 +9,16 @@ class VirtualMachinePlacer
         # for now, select least used orchestrator
         orchestrators = Orchestrator.all
         orchestrator = orchestrators[0]
-        orchestrators.each do |o| 
+        orchestrators.each do |o|
             if o.virtual_machines.count < orchestrator.virtual_machines.count
                 orchestrator = o
+            end
         end
-
+           
         vm = VirtualMachine.create(
             image: @image,
-            orchestrator: orchestrator
+            orchestrator: orchestrator,
+            status: "INIT"
         )
        
         req = ::Vm::CreateVMRequest.new(:imageName => @image)
@@ -26,5 +28,4 @@ class VirtualMachinePlacer
         rabbit.send(routing_key, message)
         return vm
     end
-end
 end
