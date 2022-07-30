@@ -5,7 +5,6 @@ class OrchestratorHealthWorker
   
     from_queue "orchestrator.health", env: nil
     def work(health)
-      logger.debug("asfdsdfasdf")
       orch = ::Orch::Orchestrator.decode(health)
       Orchestrator.upsert({name: orch.name, status:orch.status}, unique_by: :name)
       ack! 

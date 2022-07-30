@@ -1,4 +1,3 @@
-require 'bunny'
 require "#{Rails.root}/lib/protos/vm_pb.rb"
 
 class VirtualMachinePlacer
@@ -19,13 +18,12 @@ class VirtualMachinePlacer
             image: @image,
             orchestrator: orchestrator
         )
-        exchange_name = "pitwall.orchestration"
-        conn = Bunny.new.tap(&:start)
-        ch = conn.create_channel
-        exchange = ch.topic(exchange_name, :durable => true)
+       
         req = ::Vm::CreateVMRequest.new(:imageName => @image)
         message = ::Vm::CreateVMRequest.encode(req)
-        exchange.publish(message, routing_key: "orchestrator.vm.crud.#{orchestrator.name}")
+        routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
+        rabbit = Rabbitmq.new()
+        rabbit.send(routing_key, message)
         return vm
     end
 end
