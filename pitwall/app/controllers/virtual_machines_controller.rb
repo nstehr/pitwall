@@ -1,6 +1,3 @@
-require 'bunny'
-require "#{Rails.root}/lib/protos/vm_pb.rb"
-
 class VirtualMachinesController < ApplicationController
     def index
         @virtualMachines = VirtualMachine.all 
@@ -13,18 +10,8 @@ class VirtualMachinesController < ApplicationController
     end 
 
     def create
-        @virtualMachine = VirtualMachine.create(
-            image: params[:image]
-        )
-        # TODO: extract to service
-        exchange_name = "pitwall.orchestration"
-        conn = Bunny.new.tap(&:start)
-        ch = conn.create_channel
-        exchange = ch.topic(exchange_name, :durable => true)
-        req = ::Vm::CreateVMRequest.new(:imageName => params[:image])
-        message = ::Vm::CreateVMRequest.encode(req)
-        exchange.publish(message, routing_key: "orchestrator.vm.crud.leonardo")
-        
+        placer = VirtualMachinePlacer.new(params[:image])
+        @virtualMachine = placer.place
         render json: @virtualMachine
     end 
 

@@ -7,7 +7,6 @@ class OrchestratorHealthWorker
     def work(health)
       logger.debug("asfdsdfasdf")
       orch = ::Orch::Orchestrator.decode(health)
-      logger.debug(orch.name)
       Orchestrator.upsert({name: orch.name, status:orch.status}, unique_by: :name)
       ack! 
     end

@@ -10,12 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_28_020007) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_30_020715) do
   create_table "orchestrators", force: :cascade do |t|
     t.string "status"
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "virtual_machines_count"
     t.index ["name"], name: "index_orchestrators_on_name", unique: true
   end
 
@@ -23,6 +24,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_28_020007) do
     t.string "image"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "orchestrator_id"
+    t.index ["orchestrator_id"], name: "index_virtual_machines_on_orchestrator_id"
   end
 
+  add_foreign_key "virtual_machines", "orchestrators"
 end
