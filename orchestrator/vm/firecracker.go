@@ -9,15 +9,14 @@ import (
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 )
 
-func startVM(ctx context.Context, opts *firecrackerOptions) error {
+func startVM(ctx context.Context, opts *firecrackerOptions) (*firecracker.Machine, error) {
 	// convert options to a firecracker config
 	fcCfg, err := opts.getFirecrackerConfig()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	vmmCtx, vmmCancel := context.WithCancel(ctx)
-	defer vmmCancel()
+	vmmCtx, _ := context.WithCancel(ctx)
 
 	// machineOpts := []firecracker.Opt{
 	// 	firecracker.WithLogger(log.NewEntry(logger)),
@@ -36,23 +35,17 @@ func startVM(ctx context.Context, opts *firecrackerOptions) error {
 
 	m, err := firecracker.NewMachine(vmmCtx, fcCfg, machineOpts...)
 	if err != nil {
-		return fmt.Errorf("Failed creating machine: %s", err)
+		return nil, fmt.Errorf("Failed creating machine: %s", err)
 	}
 
 	if err := m.Start(vmmCtx); err != nil {
-		return fmt.Errorf("Failed to start machine: %v", err)
+		return nil, fmt.Errorf("Failed to start machine: %v", err)
 	}
-
-	defer m.StopVMM()
 
 	if opts.validMetadata != nil {
 		m.SetMetadata(vmmCtx, opts.validMetadata)
 	}
 
-	// wait for the VMM to exit
-	if err := m.Wait(vmmCtx); err != nil {
-		return fmt.Errorf("Wait returned an error %s", err)
-	}
 	log.Printf("Start machine was happy")
-	return nil
+	return m, nil
 }

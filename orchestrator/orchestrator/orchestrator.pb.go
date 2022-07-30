@@ -4,6 +4,9 @@
 // 	protoc        v3.21.2
 // source: orchestrator.proto
 
+// making package 'orch' instead of orchestrator due to issue with Ruby generator with package and message being the
+// same name
+
 package orchestrator
 
 import (

@@ -6,7 +6,11 @@ require 'google/protobuf'
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_file("vm.proto", :syntax => :proto3) do
     add_message "vm.CreateVMRequest" do
-      optional :imageName, :string, 1
+      optional :id, :int64, 1
+      optional :imageName, :string, 2
+    end
+    add_message "vm.StopVMRequest" do
+      optional :id, :int64, 1
     end
     add_message "vm.VM" do
       optional :id, :int64, 1
@@ -18,5 +22,6 @@ end
 
 module Vm
   CreateVMRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.CreateVMRequest").msgclass
+  StopVMRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.StopVMRequest").msgclass
   VM = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.VM").msgclass
 end

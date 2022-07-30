@@ -1,10 +1,7 @@
 require "#{Rails.root}/lib/protos/vm_pb.rb"
 
 class VirtualMachinePlacer
-    def initialize(image)
-        @image = image
-    end
-    def place()
+    def place(image)
         # this logic will change once the orchestrator is enriched
         # for now, select least used orchestrator
         orchestrators = Orchestrator.all
@@ -16,12 +13,12 @@ class VirtualMachinePlacer
         end
            
         vm = VirtualMachine.create(
-            image: @image,
+            image: image,
             orchestrator: orchestrator,
             status: "INIT"
         )
        
-        req = ::Vm::CreateVMRequest.new(:imageName => @image)
+        req = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => image)
         message = ::Vm::CreateVMRequest.encode(req)
         routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
         rabbit = Rabbitmq.new()

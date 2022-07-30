@@ -5,8 +5,14 @@ package vm;
 option go_package = "../vm";
 
 message CreateVMRequest {
-    string imageName = 1;
+    int64 id = 1;
+    string imageName = 2;
 }
+
+message StopVMRequest {
+    int64 id = 1;
+}
+
 message VM {
     int64 id = 1;
     string imageName = 2;
