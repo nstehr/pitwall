@@ -4,6 +4,20 @@ package vm;
 
 option go_package = "../vm";
 
+enum Type {
+    CREATE = 0;
+    DELETE = 1;
+    
+  }
+
+message VMRequest {
+  Type type = 1;
+  oneof payload {
+      CreateVMRequest create = 2;
+      StopVMRequest stop = 3;
+  }
+}
+
 message CreateVMRequest {
     int64 id = 1;
     string imageName = 2;

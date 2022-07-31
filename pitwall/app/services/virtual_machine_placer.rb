@@ -18,8 +18,9 @@ class VirtualMachinePlacer
             status: "INIT"
         )
        
-        req = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => image)
-        message = ::Vm::CreateVMRequest.encode(req)
+        create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => image)
+        req = ::Vm::VMRequest.new(:type => ::Vm::Type::CREATE, :create => create)
+        message = ::Vm::VMRequest.encode(req)
         routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
         rabbit = Rabbitmq.new()
         rabbit.send(routing_key, message)
