@@ -9,6 +9,11 @@ class OrchestratorVmStatusWorker
         virtualMachine.update(
             status: vm.status
         )
+        if vm.status == "STOPPED"
+            virtualMachine.update(
+            orchestrator_id: nil 
+        )
+        end
       ack! 
     end
   end

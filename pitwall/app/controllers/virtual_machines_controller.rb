@@ -24,9 +24,8 @@ class VirtualMachinesController < ApplicationController
     end 
 
     def destroy
-        @virtualMachines = VirtualMachine.all 
-        @virtualMachine = VirtualMachine.find(params[:id])
-        @virtualMachine.destroy
+        placer = VirtualMachinePlacer.new
+        @virtualMachine = placer.stop(params[:id])
         render json: @virtualMachines
     end
 end
