@@ -50,7 +50,12 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 
 	sendStatusUpdate(ctx, &vm)
 
-	buildFilesystemFromImage(ctx, req.GetImageName())
+	_, err := buildFilesystemFromImage(ctx, req.GetImageName())
+	if err != nil {
+		log.Println("Error building VM filesystem: ", err)
+		vm.Status = "ERROR"
+		sendStatusUpdate(ctx, &vm)
+	}
 	opts := newFirecrackerOptions()
 	p := flags.NewParser(opts, flags.Default)
 	p.Parse()
