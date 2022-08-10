@@ -195,6 +195,26 @@ func untar(reader io.Reader, target string) error {
 			}
 			continue
 		}
+		// symlink navigation from here: https://github.com/hashicorp/go-getter/blob/85c3ba950122547165a31bf8f6080c6e71c49ce0/decompress_tar.go
+		if header.Typeflag == tar.TypeSymlink {
+			// If the type is a symlink we re-write it and
+			// continue instead of attempting to copy the contents
+
+			// Prevent escaping the dst path
+			link := filepath.Join(path, header.Linkname)
+
+			// Convert the link destination back into a relative path
+			// relative compared to the destination root
+			rel, err := filepath.Rel(path, link)
+			if err != nil {
+				return err
+			}
+
+			if err := os.Symlink(rel, path); err != nil {
+				return fmt.Errorf("failed writing symbolic link: %s", err)
+			}
+			continue
+		}
 
 		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
 		if err != nil {
