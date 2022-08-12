@@ -36,6 +36,7 @@ func buildFilesystemFromImage(ctx context.Context, image string) (string, error)
 	log.Println(imgInspect.Config.Entrypoint)
 	log.Println(imgInspect.Config.Cmd)
 	log.Println(imgInspect.RootFS.Type)
+	log.Println(len(imgInspect.RootFS.Layers))
 
 	rc, err := cli.ImageSave(ctx, []string{image})
 	if err != nil {
@@ -167,7 +168,10 @@ func extractLayers(reader io.Reader, target string) error {
 
 		if !info.IsDir() {
 			if strings.Contains(header.Name, "layer.tar") {
-				untar(tarReader, target)
+				err = untar(tarReader, target)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -216,15 +220,22 @@ func untar(reader io.Reader, target string) error {
 			continue
 		}
 
-		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		_, err = io.Copy(file, tarReader)
+		// process one file at to make sure we open, read, and close it as to not go over any ulimit settings
+		// https://stackoverflow.com/a/66684218
+		err = writeFile(tarReader, path, info.Mode())
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func writeFile(tarReader io.Reader, filePath string, fileMode os.FileMode) error {
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, fileMode)
+	if err != nil {
+		return err
+	}
+	defer file.Close() // close error discarded
+	_, err = io.Copy(file, tarReader)
+	return err
 }
