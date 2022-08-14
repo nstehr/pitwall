@@ -69,6 +69,7 @@ func buildFilesystemFromImage(ctx context.Context, image string) (string, error)
 	if err != nil {
 		return "", err
 	}
+	log.Println("DONE")
 	// unmount the filesystem
 	err = unmount(path)
 	if err != nil {
@@ -199,22 +200,19 @@ func untar(reader io.Reader, target string) error {
 			}
 			continue
 		}
-		// symlink navigation from here: https://github.com/hashicorp/go-getter/blob/85c3ba950122547165a31bf8f6080c6e71c49ce0/decompress_tar.go
+		// symlink navigation from inspired from here: https://github.com/hashicorp/go-getter/blob/85c3ba950122547165a31bf8f6080c6e71c49ce0/decompress_tar.go
 		if header.Typeflag == tar.TypeSymlink {
 			// If the type is a symlink we re-write it and
 			// continue instead of attempting to copy the contents
 
-			// Prevent escaping the dst path
-			link := filepath.Join(path, header.Linkname)
-
-			// Convert the link destination back into a relative path
-			// relative compared to the destination root
-			rel, err := filepath.Rel(path, link)
-			if err != nil {
-				return err
+			// TODO: do I need to add some more safety here (and in other spots?) for any tar expanding attacks
+			if _, err := os.Lstat(path); err == nil {
+				// link exists exist
+				log.Println(fmt.Sprintf("Symbolic link from: %s to %s already exists, skipping", header.Linkname, path))
+				continue
 			}
 
-			if err := os.Symlink(rel, path); err != nil {
+			if err := os.Symlink(header.Linkname, path); err != nil {
 				return fmt.Errorf("failed writing symbolic link: %s", err)
 			}
 			continue
