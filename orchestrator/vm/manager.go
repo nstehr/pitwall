@@ -50,7 +50,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 
 	sendStatusUpdate(ctx, &vm)
 
-	_, err := buildFilesystemFromImage(ctx, req.GetImageName())
+	fileSystem, err := buildFilesystemFromImage(ctx, req.GetImageName())
 	if err != nil {
 		log.Println("Error building VM filesystem: ", err)
 		vm.Status = "ERROR"
@@ -61,7 +61,8 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 	p.Parse()
 	// --kernel=hello-vmlinux.bin --root-drive=hello-rootfs.ext4
 	opts.FcKernelImage = "hello-vmlinux.bin"
-	opts.FcRootDrivePath = "hello-rootfs.ext4"
+	//opts.FcRootDrivePath = "hello-rootfs.ext4"
+	opts.FcRootDrivePath = fileSystem
 
 	vm.Status = "BOOTING"
 	sendStatusUpdate(ctx, &vm)

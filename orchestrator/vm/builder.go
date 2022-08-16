@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -69,6 +70,10 @@ func buildFilesystemFromImage(ctx context.Context, image string) (string, error)
 	if err != nil {
 		return "", err
 	}
+	err = injectInit(path)
+	if err != nil {
+		return "", err
+	}
 	log.Println("DONE")
 	// unmount the filesystem
 	err = unmount(path)
@@ -81,6 +86,39 @@ func buildFilesystemFromImage(ctx context.Context, image string) (string, error)
 		return "", err
 	}
 	return fmt.Sprintf("%s.ext4", image), nil
+}
+
+func injectInit(path string) error {
+	_, err := os.Stat("powerunit")
+	if err != nil {
+		return err
+	}
+
+	powerUnitDir := fmt.Sprintf("%s/etc/powerunit", path)
+	os.Mkdir(powerUnitDir, 0755)
+	bytesRead, err := ioutil.ReadFile("powerunit")
+
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(fmt.Sprintf("%s/powerunit", powerUnitDir), bytesRead, 0755)
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Lstat(fmt.Sprintf("%s/sbin/init", path)); err == nil {
+		// init already exists in some form
+		log.Println("init already exists, renaming to init.old")
+
+		err = os.Rename(fmt.Sprintf("%s/sbin/init", path), fmt.Sprintf("%s/sbin/init.old", path))
+		if err != nil {
+			return err
+		}
+	}
+	err = os.Symlink("/etc/powerunit/powerunit", fmt.Sprintf("%s/sbin/init", path))
+	return err
 }
 
 func setOwnership(path string) error {
