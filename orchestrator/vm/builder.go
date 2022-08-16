@@ -139,7 +139,6 @@ func mount(name string) error {
 	log.Println("mounting...")
 	err := cmd.Run()
 	if err != nil {
-		log.Println(stderr.String())
 		return err
 	}
 	return nil
@@ -151,12 +150,9 @@ func unmount(path string) error {
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
 	log.Println("unmount....")
 	err := cmd.Run()
 	if err != nil {
-		log.Println(stderr.String())
 		return err
 	}
 	return nil
@@ -167,7 +163,7 @@ func createFilesystem(name string) error {
 	arguments = append(arguments, "if=/dev/zero")
 	arguments = append(arguments, fmt.Sprintf("of=%s.ext4", name))
 	arguments = append(arguments, "bs=1M")
-	arguments = append(arguments, "count=500")
+	arguments = append(arguments, "count=1000")
 	cmd := exec.Command("dd", arguments...)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
@@ -176,7 +172,6 @@ func createFilesystem(name string) error {
 	log.Println("creating file using dd")
 	err := cmd.Run()
 	if err != nil {
-		log.Println(stderr.String())
 		return err
 	}
 	cmd = exec.Command("mkfs.ext4", fmt.Sprintf("%s.ext4", name))
@@ -185,7 +180,6 @@ func createFilesystem(name string) error {
 	log.Println("creating empty filesystem")
 	err = cmd.Run()
 	if err != nil {
-		log.Println(stderr.String())
 		return err
 	}
 
@@ -245,8 +239,7 @@ func untar(reader io.Reader, target string) error {
 
 			// TODO: do I need to add some more safety here (and in other spots?) for any tar expanding attacks
 			if _, err := os.Lstat(path); err == nil {
-				// link exists exist
-				log.Println(fmt.Sprintf("Symbolic link from: %s to %s already exists, skipping", header.Linkname, path))
+				// link exists
 				continue
 			}
 
