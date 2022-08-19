@@ -60,8 +60,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 	p := flags.NewParser(opts, flags.Default)
 	p.Parse()
 	// --kernel=hello-vmlinux.bin --root-drive=hello-rootfs.ext4
-	opts.FcKernelImage = "hello-vmlinux.bin"
-	//opts.FcRootDrivePath = "hello-rootfs.ext4"
+	opts.FcKernelImage = "vmlinux-5.10"
 	opts.FcRootDrivePath = fileSystem
 
 	vm.Status = "BOOTING"
