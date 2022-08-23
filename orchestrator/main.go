@@ -38,9 +38,12 @@ func main() {
 
 	verifyFirecrackerExists()
 	ctx := context.Background()
-	orchestrator.SignalOrchestratorAlive(ctx, *name)
+	err := orchestrator.SignalOrchestratorAlive(ctx, *name)
+	if err != nil {
+		log.Println(err)
+	}
 
-	_, err := vm.NewManager(*name)
+	_, err = vm.NewManager(*name)
 	log.Println(err)
 
 	// Clean exit.

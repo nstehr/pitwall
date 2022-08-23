@@ -6,7 +6,6 @@ import (
 	"log"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
-	"github.com/jessevdk/go-flags"
 	"github.com/nstehr/pitwall/orchestrator/stream"
 	"google.golang.org/protobuf/proto"
 )
@@ -56,17 +55,16 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 		vm.Status = "ERROR"
 		sendStatusUpdate(ctx, &vm)
 	}
-	opts := newFirecrackerOptions()
-	p := flags.NewParser(opts, flags.Default)
-	p.Parse()
+
+	vmConfig := vmConfig{}
 	// --kernel=hello-vmlinux.bin --root-drive=hello-rootfs.ext4
-	opts.FcKernelImage = "vmlinux-5.10"
-	opts.FcRootDrivePath = fileSystem
+	vmConfig.kernelImagePath = "vmlinux-5.10"
+	vmConfig.rootFSPath = fileSystem
 
 	vm.Status = "BOOTING"
 	sendStatusUpdate(ctx, &vm)
 
-	machine, err := startVM(ctx, opts)
+	machine, err := startVM(ctx, vmConfig)
 	if err != nil {
 		log.Println("Error booting VM: ", err)
 		vm.Status = "ERROR"
