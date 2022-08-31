@@ -12,11 +12,26 @@ import (
 
 type Manager struct {
 	hostname        string
-	virtualMachines map[int64]*firecracker.Machine
+	virtualMachines map[int64]*vmInstance
+}
+
+type vmInstance struct {
+	machine *firecracker.Machine
+	cancel  context.CancelFunc
+}
+
+type vmConfig struct {
+	kernelImagePath string
+	rootFSPath      string
+}
+
+func (vm *vmInstance) stop() {
+	vm.cancel()
+	vm.machine.StopVMM()
 }
 
 func NewManager(name string) (*Manager, error) {
-	m := &Manager{hostname: name, virtualMachines: make(map[int64]*firecracker.Machine)}
+	m := &Manager{hostname: name, virtualMachines: make(map[int64]*vmInstance)}
 	queue := fmt.Sprintf("orchestrator.vm.crud.%s", name)
 	err := stream.RegisterHandler(queue, queue, m.dispatch)
 	if err != nil {
@@ -79,7 +94,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 
 func (m *Manager) onVMStop(req *StopVMRequest) {
 	if machine, ok := m.virtualMachines[req.Id]; ok {
-		machine.StopVMM()
+		machine.stop()
 		vm := VM{}
 		vm.Id = req.Id
 		vm.Status = "STOPPED"

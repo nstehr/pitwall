@@ -19,12 +19,7 @@ const (
 	roDeviceSuffix = ":ro"
 )
 
-type vmConfig struct {
-	kernelImagePath string
-	rootFSPath      string
-}
-
-func startVM(ctx context.Context, cfg vmConfig) (*firecracker.Machine, error) {
+func startVM(ctx context.Context, cfg vmConfig) (*vmInstance, error) {
 
 	// set up VM config
 	fcCfg := firecracker.Config{}
@@ -47,7 +42,7 @@ func startVM(ctx context.Context, cfg vmConfig) (*firecracker.Machine, error) {
 
 	fcCfg.LogLevel = "DEBUG"
 
-	vmmCtx, _ := context.WithCancel(ctx)
+	vmmCtx, cancelFunc := context.WithCancel(ctx)
 
 	// machineOpts := []firecracker.Opt{
 	// 	firecracker.WithLogger(log.NewEntry(logger)),
@@ -66,15 +61,18 @@ func startVM(ctx context.Context, cfg vmConfig) (*firecracker.Machine, error) {
 
 	m, err := firecracker.NewMachine(vmmCtx, fcCfg, machineOpts...)
 	if err != nil {
+		cancelFunc()
 		return nil, fmt.Errorf("Failed creating machine: %s", err)
 	}
 
 	if err := m.Start(vmmCtx); err != nil {
+		cancelFunc()
 		return nil, fmt.Errorf("Failed to start machine: %v", err)
 	}
 
 	log.Printf("Start machine was happy")
-	return m, nil
+	vmInstance := &vmInstance{machine: m, cancel: cancelFunc}
+	return vmInstance, nil
 }
 
 func getRootDrive(rootDrivePath string) ([]models.Drive, error) {

@@ -131,6 +131,7 @@ func setOwnership(path string) error {
 }
 
 func mount(name string) error {
+	// TODO: switch to syscall.Mount
 	cmd := exec.Command("mount", fmt.Sprintf("%s.ext4", name), name)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
