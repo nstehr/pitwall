@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -39,6 +40,25 @@ func startVM(ctx context.Context, cfg vmConfig) (*vmInstance, error) {
 		Smt:        firecracker.Bool(true),
 		MemSizeMib: firecracker.Int64(512),
 	}
+
+	// ip addr add 172.16.0.2/24 dev eth0
+	// ip link set eth0 up
+	// ip route add default via 172.16.0.1 dev eth0
+
+	netConfig := firecracker.StaticNetworkConfiguration{}
+	netConfig.HostDevName = cfg.hostInterface
+	netConfig.MacAddress = "AA:FC:00:00:00:01"
+	ipConfig := firecracker.IPConfiguration{}
+	ipConfig.Gateway = net.ParseIP(cfg.gateway)
+	ipNet := net.IPNet{}
+	ipNet.IP = net.ParseIP(cfg.ip)
+	ipNet.Mask = net.IPv4Mask(255, 255, 255, 0)
+	ipConfig.IPAddr = ipNet
+	ipConfig.IfName = "eth0"
+	ipConfig.Nameservers = []string{"8.8.8.8"}
+	netConfig.IPConfiguration = &ipConfig
+	ni := firecracker.NetworkInterface{StaticConfiguration: &netConfig}
+	fcCfg.NetworkInterfaces = []firecracker.NetworkInterface{ni}
 
 	fcCfg.LogLevel = "DEBUG"
 

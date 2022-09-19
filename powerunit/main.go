@@ -20,6 +20,11 @@ func main() {
 		log.Println(fmt.Sprintf("Error mounting directories: ", err))
 	}
 
+	err = core.LinkNameservers()
+	if err != nil {
+		log.Println(fmt.Sprintf("Error linking nameservers: ", err))
+	}
+
 	// drop into the shell for now, just for testing
 	cmd := exec.Command("/bin/sh")
 

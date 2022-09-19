@@ -3,25 +3,30 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"syscall"
 
+	"github.com/coreos/go-iptables/iptables"
 	"github.com/nstehr/pitwall/orchestrator/orchestrator"
 	"github.com/nstehr/pitwall/orchestrator/vm"
+	"github.com/vishvananda/netlink"
 )
 
 var (
-	name = flag.String("name", "", "unique name for the orchestrator, defaults to hostname")
+	name          = flag.String("name", "", "unique name for the orchestrator, defaults to hostname")
+	subnet        = flag.String("subnet", "172.30.0.0/16", "subnet to use on host for VM ips")
+	hostInterface = flag.String("hostInterface", "wlp2s0", "host interface to use for outbound traffic")
+	setup         = flag.Bool("setup", false, "setups up host networking (bridge and iptables rules)")
 )
 
 const (
 	// executableMask is the mask needed to check whether or not a file's
 	// permissions are executable.
-	executableMask = 0111
-
+	executableMask         = 0111
 	firecrackerDefaultPath = "firecracker"
 )
 
@@ -36,14 +41,39 @@ func main() {
 		*name = hostname
 	}
 
+	ipam, err := vm.NewIpam(*subnet)
+	if *setup {
+		log.Println("Initializing host networking setup")
+		if err != nil {
+			log.Fatalf("failed to create ipam servie: %v", err)
+		}
+		err = initHostNetworking(ipam, *hostInterface)
+		if err != nil {
+			log.Fatalf("failed to initialize host networking: %v", err)
+		}
+		return
+	}
+
+	bridge, err := netlink.LinkByName(vm.BridgeName)
+	bridgeIf, err := netlink.AddrList(bridge, netlink.FAMILY_V4)
+	if err != nil {
+		log.Fatalf("error retrieving host bridge IP", err)
+	}
+	bridgeIfIp := bridgeIf[0].IP
+	// TODO: probably a better way, but take the ip acting as the 'gateway' and reserve premptively
+	err = ipam.AcquireSpecificIP(bridgeIfIp.String())
+	if err != nil {
+		log.Fatalf("failed to reserve host gateway: %v", err)
+	}
 	verifyFirecrackerExists()
+
 	ctx := context.Background()
-	err := orchestrator.SignalOrchestratorAlive(ctx, *name)
+	err = orchestrator.SignalOrchestratorAlive(ctx, *name)
 	if err != nil {
 		log.Println(err)
 	}
 
-	_, err = vm.NewManager(*name)
+	_, err = vm.NewManager(*name, bridgeIfIp.String(), ipam)
 	log.Println(err)
 
 	// Clean exit.
@@ -79,4 +109,59 @@ func verifyFirecrackerExists() {
 	} else if finfo.Mode()&executableMask == 0 {
 		log.Fatalf("Binary, %q, is not executable. Check permissions of binary", firecrackerBinary)
 	}
+}
+
+func initHostNetworking(ipam *vm.Ipam, outboundInterface string) error {
+	// brctl addbr fcbr0
+	// ip addr add 172.30.0.1/24 dev fcbr0
+	// ip link set fcbr0 up
+	// iptables -t nat -A POSTROUTING  -s 172.30.0.0/16 -o wlp2s0 -j MASQUERADE
+	// iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+	// iptables -A FORWARD -i fcbr0 -o wlp2s0 -j ACCEPT
+	bridge, err := netlink.LinkByName(vm.BridgeName)
+	if err != nil {
+		// if there is no bridge, let's create one
+		if err.Error() == "Link not found" {
+			la := netlink.NewLinkAttrs()
+			la.Name = vm.BridgeName
+			bridge = &netlink.Bridge{LinkAttrs: la}
+			err := netlink.LinkAdd(bridge)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	ip, err := ipam.AcquireIP()
+	if err != nil {
+		return err
+	}
+	log.Println(fmt.Sprintf("Gateway IP for bridge: %s\n", ip))
+	ipWithCidr := fmt.Sprintf("%s/24", ip)
+	addr, err := netlink.ParseAddr(ipWithCidr)
+	if err != nil {
+		return err
+	}
+	netlink.AddrAdd(bridge, addr)
+	err = netlink.LinkSetUp(bridge)
+
+	// bridge set up, now we can setup the iptables rules
+	ipt, err := iptables.New()
+	if err != nil {
+		return err
+	}
+	cidr := ipam.GetCIDR()
+	err = ipt.Append("nat", "POSTROUTING", "-s", cidr, "-o", outboundInterface, "-j", "MASQUERADE")
+	if err != nil {
+		return err
+	}
+	// iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+	err = ipt.Append("filter", "FORWARD", "-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "ACCEPT")
+	if err != nil {
+		return err
+	}
+	// iptables -A FORWARD -i fcbr0 -o wlp2s0 -j ACCEPT
+	err = ipt.Append("filter", "FORWARD", "-i", vm.BridgeName, "-o", outboundInterface, "-j", "ACCEPT")
+	return err
 }

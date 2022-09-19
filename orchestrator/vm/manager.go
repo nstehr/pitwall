@@ -13,6 +13,8 @@ import (
 type Manager struct {
 	hostname        string
 	virtualMachines map[int64]*vmInstance
+	ipam            *Ipam
+	gateway         string
 }
 
 type vmInstance struct {
@@ -23,6 +25,9 @@ type vmInstance struct {
 type vmConfig struct {
 	kernelImagePath string
 	rootFSPath      string
+	ip              string
+	gateway         string
+	hostInterface   string
 }
 
 func (vm *vmInstance) stop() {
@@ -30,8 +35,8 @@ func (vm *vmInstance) stop() {
 	vm.machine.StopVMM()
 }
 
-func NewManager(name string) (*Manager, error) {
-	m := &Manager{hostname: name, virtualMachines: make(map[int64]*vmInstance)}
+func NewManager(name string, gateway string, ipam *Ipam) (*Manager, error) {
+	m := &Manager{hostname: name, ipam: ipam, gateway: gateway, virtualMachines: make(map[int64]*vmInstance)}
 	queue := fmt.Sprintf("orchestrator.vm.crud.%s", name)
 	err := stream.RegisterHandler(queue, queue, m.dispatch)
 	if err != nil {
@@ -73,9 +78,25 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 
 	vmConfig := vmConfig{}
 	// --kernel=hello-vmlinux.bin --root-drive=hello-rootfs.ext4
+	//vmConfig.rootFSPath = "hello-rootfs.ext4"
 	vmConfig.kernelImagePath = "vmlinux-5.10"
 	vmConfig.rootFSPath = fileSystem
+	ip, err := m.ipam.AcquireIP()
+	if err != nil {
+		log.Println("Error aquiring IP address: ", err)
+		vm.Status = "ERROR"
+		sendStatusUpdate(ctx, &vm)
+	}
+	vmConfig.ip = ip.String()
+	vmConfig.gateway = m.gateway
 
+	tap, err := getNextTap()
+	if err != nil {
+		log.Println("Error aquiring TAP interface: ", err)
+		vm.Status = "ERROR"
+		sendStatusUpdate(ctx, &vm)
+	}
+	vmConfig.hostInterface = tap
 	vm.Status = "BOOTING"
 	sendStatusUpdate(ctx, &vm)
 
