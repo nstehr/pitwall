@@ -13,16 +13,21 @@ func main() {
 	log.Println("powerunit init system v0.1")
 	err := core.SetHostname("foo")
 	if err != nil {
-		log.Println(fmt.Sprintf("error setting hostname: ", err))
+		log.Printf("error setting hostname: %s\n", err)
 	}
 	err = core.MountAll()
 	if err != nil {
-		log.Println(fmt.Sprintf("Error mounting directories: ", err))
+		log.Printf("Error mounting directories: %s\n", err)
+	}
+
+	err = core.SetPermissions()
+	if err != nil {
+		log.Printf("Error setting permissions on directories: %s\n", err)
 	}
 
 	err = core.LinkNameservers()
 	if err != nil {
-		log.Println(fmt.Sprintf("Error linking nameservers: ", err))
+		log.Printf("Error linking nameservers: %s\n", err)
 	}
 
 	// drop into the shell for now, just for testing

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"syscall"
@@ -20,6 +19,11 @@ func MountAll() error {
 	return nil
 }
 
+func SetPermissions() error {
+	log.Println("Setting permissions")
+	return os.Chmod("/tmp", 01777)
+}
+
 func mount(target string, fsType string, flags uintptr) error {
 
 	if _, err := os.Stat(target); os.IsNotExist(err) {
@@ -29,7 +33,7 @@ func mount(target string, fsType string, flags uintptr) error {
 		}
 	}
 
-	log.Println(fmt.Sprintf("Mounting: %s as filesystem type: %s", target, fsType))
+	log.Printf("Mounting: %s as filesystem type: %s\n", target, fsType)
 	err := syscall.Mount("none", target, fsType, flags, "")
 	if err != nil {
 		return err

@@ -163,7 +163,7 @@ func createFilesystem(name string) error {
 	arguments := []string{}
 	arguments = append(arguments, "if=/dev/zero")
 	arguments = append(arguments, fmt.Sprintf("of=%s.ext4", name))
-	arguments = append(arguments, "bs=1M")
+	arguments = append(arguments, "bs=5M")
 	arguments = append(arguments, "count=1000")
 	cmd := exec.Command("dd", arguments...)
 	var out bytes.Buffer
