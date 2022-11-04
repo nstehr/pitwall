@@ -18,6 +18,7 @@ type Manager struct {
 }
 
 type vmInstance struct {
+	vmConfig
 	machine *firecracker.Machine
 	cancel  context.CancelFunc
 }
@@ -74,6 +75,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 		log.Println("Error building VM filesystem: ", err)
 		vm.Status = "ERROR"
 		sendStatusUpdate(ctx, &vm)
+		return
 	}
 
 	vmConfig := vmConfig{}
@@ -86,6 +88,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 		log.Println("Error aquiring IP address: ", err)
 		vm.Status = "ERROR"
 		sendStatusUpdate(ctx, &vm)
+		return
 	}
 	vmConfig.ip = ip.String()
 	vmConfig.gateway = m.gateway
@@ -95,6 +98,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 		log.Println("Error aquiring TAP interface: ", err)
 		vm.Status = "ERROR"
 		sendStatusUpdate(ctx, &vm)
+		return
 	}
 	vmConfig.hostInterface = tap
 	vm.Status = "BOOTING"
@@ -115,11 +119,26 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 
 func (m *Manager) onVMStop(req *StopVMRequest) {
 	if machine, ok := m.virtualMachines[req.Id]; ok {
-		machine.stop()
 		vm := VM{}
 		vm.Id = req.Id
-		vm.Status = "STOPPED"
 		ctx := context.Background()
+		machine.stop()
+		err := releaseTap(machine.hostInterface)
+		if err != nil {
+			log.Println("Error removing tap interface: ", err)
+			vm.Status = "ERROR"
+			sendStatusUpdate(ctx, &vm)
+			return
+		}
+		err = m.ipam.ReleaseIP(machine.ip)
+		if err != nil {
+			log.Println("Error removing releasing ip: ", err)
+			vm.Status = "ERROR"
+			sendStatusUpdate(ctx, &vm)
+			return
+		}
+
+		vm.Status = "STOPPED"
 		sendStatusUpdate(ctx, &vm)
 	}
 

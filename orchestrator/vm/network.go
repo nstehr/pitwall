@@ -49,6 +49,13 @@ func (ipam *Ipam) AcquireSpecificIP(ipAddress string) error {
 	return err
 }
 
+func (ipam *Ipam) ReleaseIP(ipAddress string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := ipam.ipamer.ReleaseIPFromPrefix(ctx, ipam.prefix.Cidr, ipAddress)
+	return err
+}
+
 func (ipam *Ipam) GetCIDR() string {
 	return ipam.prefix.Cidr
 }
@@ -91,4 +98,19 @@ func getNextTap() (string, error) {
 	}
 	err = netlink.LinkSetUp(tap)
 	return newTap, err
+}
+
+func releaseTap(tapName string) error {
+	la := netlink.NewLinkAttrs()
+	la.Name = tapName
+	tap := &netlink.Tuntap{LinkAttrs: la, Mode: netlink.TUNTAP_MODE_TAP}
+	err := netlink.LinkSetDown(tap)
+	if err != nil {
+		return err
+	}
+	err = netlink.LinkDel(tap)
+	if err != nil {
+		return err
+	}
+	return nil
 }

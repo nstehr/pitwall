@@ -91,7 +91,7 @@ func startVM(ctx context.Context, cfg vmConfig) (*vmInstance, error) {
 	}
 
 	log.Printf("Start machine was happy")
-	vmInstance := &vmInstance{machine: m, cancel: cancelFunc}
+	vmInstance := &vmInstance{machine: m, cancel: cancelFunc, vmConfig: cfg}
 	return vmInstance, nil
 }
 
