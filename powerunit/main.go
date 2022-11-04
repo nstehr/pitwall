@@ -37,6 +37,12 @@ func main() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	// launch an in-process SSH TTY.  There are probably
+	// much better ways to do this, but C'est la vie
+	go func() {
+		err := core.SSH(2222)
+		log.Println("Error starting SSH: ", err)
+	}()
 	// not the way we want to do it properly, but launch the shell and wait
 	// ideally we'll want to spawn the processes and have out process here
 	// just wait for a signal
