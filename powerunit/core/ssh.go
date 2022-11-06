@@ -44,6 +44,6 @@ func SSH(port int) error {
 		}
 	})
 
-	log.Println("starting ssh server on port 2222...")
+	log.Printf("starting ssh server on port %d...\n", port)
 	return ssh.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
