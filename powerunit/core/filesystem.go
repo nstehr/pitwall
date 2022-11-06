@@ -20,6 +20,8 @@ func MountAll() error {
 }
 
 func SetPermissions() error {
+	// I noticed in some images (like ubuntu) the permissions on some directories weren't
+	// right for general VM use, so this should update them
 	log.Println("Setting permissions")
 	return os.Chmod("/tmp", 01777)
 }
