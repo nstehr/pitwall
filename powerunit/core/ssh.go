@@ -45,5 +45,19 @@ func SSH(port int) error {
 	})
 
 	log.Printf("starting ssh server on port %d...\n", port)
-	return ssh.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	publicKeyOption := ssh.PublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
+		f, err := os.ReadFile("/etc/powerunit/key")
+		if err != nil {
+			log.Println("Error reading public key for SSH", err)
+			return false
+		}
+		allowed, _, _, _, err := ssh.ParseAuthorizedKey(f)
+		if err != nil {
+			log.Println("Error parsing public key", err)
+			return false
+		}
+
+		return ssh.KeysEqual(key, allowed)
+	})
+	return ssh.ListenAndServe(fmt.Sprintf(":%d", port), nil, publicKeyOption)
 }

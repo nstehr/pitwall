@@ -18,7 +18,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func buildFilesystemFromImage(ctx context.Context, image string) (string, error) {
+func buildFilesystemFromImage(ctx context.Context, image string, publicKey string) (string, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return "", err
@@ -74,6 +74,7 @@ func buildFilesystemFromImage(ctx context.Context, image string) (string, error)
 	if err != nil {
 		return "", err
 	}
+	err = injectPublicKey(path, publicKey)
 	log.Println("DONE")
 	// unmount the filesystem
 	err = unmount(path)
@@ -119,6 +120,34 @@ func injectInit(path string) error {
 	}
 	err = os.Symlink("/etc/powerunit/powerunit", fmt.Sprintf("%s/sbin/init", path))
 	return err
+}
+
+func injectPublicKey(path string, publicKey string) error {
+	if publicKey == "" {
+		log.Println("No public key specified, ssh to VM will not work")
+		return nil
+	}
+
+	// for now write key to the powerunit directory
+	powerUnitDir := fmt.Sprintf("%s/etc/powerunit", path)
+	if _, err := os.Stat(powerUnitDir); os.IsNotExist(err) {
+		os.Mkdir(powerUnitDir, 0755)
+	}
+
+	f, err := os.Create(fmt.Sprintf("%s/key", powerUnitDir))
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(publicKey)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func setOwnership(path string) error {

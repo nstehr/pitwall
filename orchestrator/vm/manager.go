@@ -69,8 +69,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 	vm.Status = "BUILDING_FILESYSTEM"
 
 	sendStatusUpdate(ctx, &vm)
-
-	fileSystem, err := buildFilesystemFromImage(ctx, req.GetImageName())
+	fileSystem, err := buildFilesystemFromImage(ctx, req.GetImageName(), req.GetPublicKey())
 	if err != nil {
 		log.Println("Error building VM filesystem: ", err)
 		vm.Status = "ERROR"

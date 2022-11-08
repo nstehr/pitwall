@@ -21,6 +21,7 @@ message VMRequest {
 message CreateVMRequest {
     int64 id = 1;
     string imageName = 2;
+    string publicKey = 3;
 }
 
 message StopVMRequest {

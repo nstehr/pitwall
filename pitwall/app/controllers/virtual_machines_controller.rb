@@ -11,7 +11,7 @@ class VirtualMachinesController < ApplicationController
 
     def create
         placer = VirtualMachinePlacer.new
-        @virtualMachine = placer.place(params[:image])
+        @virtualMachine = placer.place(params[:image], params[:public_key])
         render json: @virtualMachine
     end 
 

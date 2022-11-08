@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_30_025057) do
+ActiveRecord::Schema[7.0].define(version: 2022_11_07_023128) do
   create_table "orchestrators", force: :cascade do |t|
     t.string "status"
     t.string "name"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_30_025057) do
     t.datetime "updated_at", null: false
     t.integer "orchestrator_id"
     t.string "status"
+    t.string "public_key"
     t.index ["orchestrator_id"], name: "index_virtual_machines_on_orchestrator_id"
   end
 

@@ -15,6 +15,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "vm.CreateVMRequest" do
       optional :id, :int64, 1
       optional :imageName, :string, 2
+      optional :publicKey, :string, 3
     end
     add_message "vm.StopVMRequest" do
       optional :id, :int64, 1

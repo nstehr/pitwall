@@ -19,7 +19,6 @@ func main() {
 	if err != nil {
 		log.Printf("Error mounting directories: %s\n", err)
 	}
-
 	err = core.SetPermissions()
 	if err != nil {
 		log.Printf("Error setting permissions on directories: %s\n", err)
