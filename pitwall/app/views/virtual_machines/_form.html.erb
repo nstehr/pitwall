@@ -1,0 +1,24 @@
+<%= form_with model: virtualMachine, id: dom_id(virtualMachine) do |form| %>
+    <% if virtualMachine.errors.any? %>
+      <div role="alert">
+        Could not create a virtualMachine due to the following issues:
+        <ul>
+          <% virtualMachine.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= form.label :image %>
+      <%= form.text_field :image %>
+      <div aria-live></div>
+    </div>
+    <div>
+    <%= form.label :public_key %>
+    <%= form.text_area :public_key %>
+    <div aria-live></div>
+  </div>
+    <div><%= form.button %></div>
+  <% end %>

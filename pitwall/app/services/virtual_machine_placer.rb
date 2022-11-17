@@ -18,13 +18,14 @@ class VirtualMachinePlacer
             status: "INIT",
             public_key: public_key
         )
-       
-        create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => image, :publicKey => public_key)
-        req = ::Vm::VMRequest.new(:type => ::Vm::Type::CREATE, :create => create)
-        message = ::Vm::VMRequest.encode(req)
-        routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
-        rabbit = Rabbitmq.new()
-        rabbit.send(routing_key, message)
+        if vm.valid?
+            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => image, :publicKey => public_key)
+            req = ::Vm::VMRequest.new(:type => ::Vm::Type::CREATE, :create => create)
+            message = ::Vm::VMRequest.encode(req)
+            routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
+            rabbit = Rabbitmq.new()
+            rabbit.send(routing_key, message)
+        end
         return vm
     end
 

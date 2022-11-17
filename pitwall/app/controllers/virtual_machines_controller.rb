@@ -1,18 +1,31 @@
 class VirtualMachinesController < ApplicationController
     def index
-        @virtualMachines = VirtualMachine.all 
-        render json: @virtualMachines
+        if params[:status].present?
+           @virtualMachines = VirtualMachine.where(status: params[:status]).order(created_at: :desc)
+        else
+           @virtualMachines = VirtualMachine.all.order(created_at: :desc)
+        end
     end 
 
     def show
         @virtualMachine = VirtualMachine.find(params[:id])
         render json: @virtualMachine
-    end 
+    end
+
+    def new
+        @virtualMachine = VirtualMachine.new
+    end
 
     def create
         placer = VirtualMachinePlacer.new
-        @virtualMachine = placer.place(params[:image], params[:public_key])
-        render json: @virtualMachine
+        image = params[:virtual_machine][:image]
+        public_key = params[:virtual_machine][:public_key]
+        @virtualMachine = placer.place(image, public_key)
+        if @virtualMachine.valid?
+            redirect_to virtual_machines_path, notice: "VM created successfully"
+        else
+            render :new, status: :unprocessable_entity
+        end
     end 
 
     def update
