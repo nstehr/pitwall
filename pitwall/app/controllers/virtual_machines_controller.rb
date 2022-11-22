@@ -1,10 +1,11 @@
 class VirtualMachinesController < ApplicationController
     def index
         if params[:status].present?
-           @virtualMachines = VirtualMachine.where(status: params[:status]).order(created_at: :desc)
+           @pagy, vms = pagy(VirtualMachine.where(status: params[:status]).order(created_at: :desc))
         else
-           @virtualMachines = VirtualMachine.all.order(created_at: :desc)
+           @pagy, vms = pagy(VirtualMachine.all.order(created_at: :desc))
         end
+        @virtualMachines = vms
     end 
 
     def show

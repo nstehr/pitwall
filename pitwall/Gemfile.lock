@@ -151,6 +151,8 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.7-arm64-darwin)
       racc (~> 1.4)
+    pagy (5.10.1)
+      activesupport
     parallel (1.22.1)
     parser (3.1.2.1)
       ast (~> 2.4.1)
@@ -276,6 +278,7 @@ DEPENDENCIES
   google-protobuf
   importmap-rails
   jbuilder
+  pagy (~> 5.10)
   puma (~> 5.0)
   rails (~> 7.0.3, >= 7.0.3.1)
   selenium-webdriver
