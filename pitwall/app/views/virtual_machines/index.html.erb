@@ -4,7 +4,7 @@
 <%= turbo_frame_tag "vm_list" do %>
   <div>
 <ul>
-    <% @virtualMachines.each do |virtualMachine| %>
+    <% @virtual_machines.each do |virtualMachine| %>
       <li>
         <%= virtualMachine.image %>
         <%= virtualMachine.created_at %>

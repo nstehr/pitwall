@@ -1,31 +1,31 @@
 class Api::VirtualMachinesController < Api::ApiController
     def index
-        @virtualMachines = VirtualMachine.all 
-        render json: @virtualMachines
+        @virtual_machines = VirtualMachine.all 
+        render json: @virtual_machines
     end 
 
     def show
-        @virtualMachine = VirtualMachine.find(params[:id])
-        render json: @virtualMachine
+        @virtual_machine = VirtualMachine.find(params[:id])
+        render json: @virtual_machine
     end 
 
     def create
         placer = VirtualMachinePlacer.new
-        @virtualMachine = placer.place(params[:image], params[:public_key])
-        render json: @virtualMachine
+        @virtual_machine = placer.place(params[:image], params[:public_key])
+        render json: @virtual_machine
     end 
 
     def update
-        @virtualMachine = VirtualMachine.find(params[:id])
-        @virtualMachine.update(
+        @virtual_machine = VirtualMachine.find(params[:id])
+        @virtual_machine.update(
             image: params[:image]
         )
-        render json: @virtualMachine
+        render json: @virtual_machine
     end 
 
     def destroy
         placer = VirtualMachinePlacer.new
-        @virtualMachine = placer.stop(params[:id])
-        render json: @virtualMachines
+        @virtual_machine = placer.stop(params[:id])
+        render json: @virtual_machines
     end
 end
