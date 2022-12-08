@@ -11,6 +11,13 @@
   </head>
 
   <body>
+  <% if current_user.present? %>
+    <div>
+      <p>Welcome <%= current_user.email %></p>
+    </div>
+<% end %>
+    <p class="notice"><%= notice %></p>
+    <p class="alert"><%= alert %></p>
     <%= yield %>
   </body>
 </html>

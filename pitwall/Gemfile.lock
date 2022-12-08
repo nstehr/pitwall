@@ -68,10 +68,12 @@ GEM
       tzinfo (~> 2.0)
     addressable (2.8.1)
       public_suffix (>= 2.0.2, < 6.0)
+    aes_key_wrap (1.1.0)
     amq-protocol (2.3.2)
     ast (2.4.2)
     autoprefixer-rails (10.4.7.0)
       execjs (~> 2)
+    bcrypt (3.1.18)
     better_html (2.0.1)
       actionview (>= 6.0)
       activesupport (>= 6.0)
@@ -79,6 +81,7 @@ GEM
       erubi (~> 1.4)
       parser (>= 2.4)
       smart_properties
+    bindata (2.4.14)
     bindex (0.8.1)
     bootsnap (1.12.0)
       msgpack (~> 1.2)
@@ -105,6 +108,12 @@ GEM
     debug (1.6.1)
       irb (>= 1.3.6)
       reline (>= 0.3.1)
+    devise (4.8.1)
+      bcrypt (~> 3.0)
+      orm_adapter (~> 0.1)
+      railties (>= 4.1.0)
+      responders
+      warden (~> 1.2.3)
     digest (3.1.0)
     erb_lint (0.3.1)
       activesupport
@@ -115,10 +124,15 @@ GEM
       smart_properties
     erubi (1.10.0)
     execjs (2.8.1)
+    faraday (2.7.1)
+      faraday-net_http (>= 2.0, < 3.1)
+      ruby2_keywords (>= 0.0.4)
+    faraday-net_http (3.0.2)
     ffi (1.15.5)
     globalid (1.0.0)
       activesupport (>= 5.0)
     google-protobuf (3.21.9)
+    hashie (5.0.0)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     importmap-rails (1.1.5)
@@ -131,6 +145,11 @@ GEM
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
     json (2.6.1)
+    json-jwt (1.13.0)
+      activesupport (>= 4.2)
+      aes_key_wrap
+      bindata
+    jwt (2.5.0)
     loofah (2.18.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -142,6 +161,7 @@ GEM
     mini_mime (1.1.2)
     minitest (5.16.2)
     msgpack (1.5.3)
+    multi_xml (0.6.0)
     net-imap (0.2.3)
       digest
       net-protocol
@@ -159,6 +179,29 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.7-arm64-darwin)
       racc (~> 1.4)
+    oauth2 (2.0.9)
+      faraday (>= 0.17.3, < 3.0)
+      jwt (>= 1.0, < 3.0)
+      multi_xml (~> 0.5)
+      rack (>= 1.2, < 4)
+      snaky_hash (~> 2.0)
+      version_gem (~> 1.1)
+    omniauth (2.1.0)
+      hashie (>= 3.4.6)
+      rack (>= 2.2.3)
+      rack-protection
+    omniauth-keycloak (1.4.4)
+      faraday
+      json-jwt (~> 1.13.0)
+      omniauth (>= 2.0)
+      omniauth-oauth2 (~> 1.7.1)
+    omniauth-oauth2 (1.7.3)
+      oauth2 (>= 1.4, < 3)
+      omniauth (>= 1.9, < 3)
+    omniauth-rails_csrf_protection (1.0.1)
+      actionpack (>= 4.2)
+      omniauth (~> 2.0)
+    orm_adapter (0.5.0)
     pagy (5.10.1)
       activesupport
     parallel (1.22.1)
@@ -170,6 +213,8 @@ GEM
       nio4r (~> 2.0)
     racc (1.6.0)
     rack (2.2.4)
+    rack-protection (3.0.4)
+      rack
     rack-test (2.0.2)
       rack (>= 1.3)
     rails (7.0.3.1)
@@ -204,6 +249,9 @@ GEM
     regexp_parser (2.6.0)
     reline (0.3.1)
       io-console (~> 0.5)
+    responders (3.0.1)
+      actionpack (>= 5.0)
+      railties (>= 5.0)
     rexml (3.2.5)
     rubocop (1.39.0)
       json (~> 2.3)
@@ -218,6 +266,7 @@ GEM
     rubocop-ast (1.23.0)
       parser (>= 3.1.1.0)
     ruby-progressbar (1.11.0)
+    ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
     sassc (2.4.0)
       ffi (~> 1.9)
@@ -237,6 +286,9 @@ GEM
     set (1.0.3)
     sigdump (0.2.4)
     smart_properties (1.17.0)
+    snaky_hash (2.0.1)
+      hashie
+      version_gem (~> 1.1, >= 1.1.1)
     sneakers (2.11.0)
       bunny (~> 2.12)
       concurrent-ruby (~> 1.0)
@@ -267,6 +319,9 @@ GEM
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.3.0)
+    version_gem (1.1.1)
+    warden (1.2.9)
+      rack (>= 2.0.9)
     web-console (4.2.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -293,10 +348,14 @@ DEPENDENCIES
   bunny
   capybara
   debug
+  devise
   erb_lint
   google-protobuf
   importmap-rails
   jbuilder
+  jwt
+  omniauth-keycloak
+  omniauth-rails_csrf_protection
   pagy (~> 5.10)
   puma (~> 5.0)
   rails (~> 7.0.3, >= 7.0.3.1)

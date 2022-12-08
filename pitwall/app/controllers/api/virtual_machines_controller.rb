@@ -1,4 +1,5 @@
 class Api::VirtualMachinesController < Api::ApiController
+    before_action :authenticate_user!
     def index
         @virtual_machines = VirtualMachine.all 
         render json: @virtual_machines

@@ -1,4 +1,5 @@
 class VirtualMachinesController < ApplicationController
+    before_action :authenticate_user!
     def index
         if params[:status].present?
            @pagy, vm_list = pagy(VirtualMachine.where(status: params[:status]).order(created_at: :desc))
