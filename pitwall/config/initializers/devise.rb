@@ -307,6 +307,6 @@ Devise.setup do |config|
   # When set to false, does not sign a user in automatically after their password is
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
-  config.omniauth :keycloak_openid, "pitwall-ui", "", client_options: { base_url: '', site: "http://localhost:8080", realm: "pitwall" }, :strategy_class => OmniAuth::Strategies::KeycloakOpenId
+  config.omniauth :keycloak_openid, Rails.configuration.x.keycloak.client, "", client_options: { base_url: '', site: Rails.configuration.x.keycloak.root_url, realm: Rails.configuration.x.keycloak.realm }, :strategy_class => OmniAuth::Strategies::KeycloakOpenId
   config.timeout_in = 3.minutes
 end

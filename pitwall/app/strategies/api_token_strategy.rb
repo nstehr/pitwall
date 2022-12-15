@@ -26,7 +26,7 @@ class ApiTokenStrategy < Warden::Strategies::Base
 
     def get_public_key
         # this key needs to be fetched from keycloak
-        url =  "http://localhost:8080/realms/pitwall/"
+        url =  Rails.configuration.x.keycloak.realm_api
         response = Net::HTTP.get_response(URI.parse(url))
         JSON.parse(response.body)["public_key"] if response.code == "200"
     end

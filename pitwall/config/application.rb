@@ -18,5 +18,11 @@ module Pitwall
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # TODO: should this be somewhere else (initializer?)
+    config.x.keycloak.client = 'pitwall-ui'
+    config.x.keycloak.realm = 'pitwall'
+    config.x.keycloak.root_url = ENV['KEYCLOAK_URL']
+    config.x.keycloak.realm_api =  "#{config.x.keycloak.root_url}/realms/#{config.x.keycloak.realm }/"
   end
 end
