@@ -1,4 +1,7 @@
 class Api::ApiController < ActionController::API
+
+    around_action :skip_session
+
     rescue_from StandardError do |exception|
         render json: { :error => exception.message }, :status => 500
     end    
@@ -11,9 +14,11 @@ class Api::ApiController < ActionController::API
     def current_user
         @current_user ||= warden.authenticate(:api_token, scope: :user)
     end
-    after_action lambda {
-       # HACK! to remove cookie on API requests
-       # TODO: this still doesn't work when there is an error, need to look further
-       request.session_options[:skip] = true
-    }
+
+    # kind of hacky, but make sure no cookie/session is used for API requests
+    def skip_session
+        yield
+      ensure
+        request.session_options[:skip] = true
+      end
 end
