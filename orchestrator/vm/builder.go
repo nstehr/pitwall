@@ -70,6 +70,8 @@ func buildFilesystemFromImage(ctx context.Context, image string, publicKey strin
 	if err != nil {
 		return "", err
 	}
+	// TODO: let's explore using initrfs to contain the init binary and the public key
+	// this would allow us to have reuse amongst the Docker image based filesystem
 	err = injectInit(path)
 	if err != nil {
 		return "", err
