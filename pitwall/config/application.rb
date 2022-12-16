@@ -24,5 +24,10 @@ module Pitwall
     config.x.keycloak.realm = 'pitwall'
     config.x.keycloak.root_url = ENV['KEYCLOAK_URL']
     config.x.keycloak.realm_api =  "#{config.x.keycloak.root_url}/realms/#{config.x.keycloak.realm }/"
+
+    config.x.rabbitmq.server = ENV['AMQP_SERVER']
+    config.x.rabbitmq.username = ENV['AMQP_USER']
+    config.x.rabbitmq.password = ENV['AMQP_PASSWORD']
+    config.x.rabbitmq.vhost = ENV['AMQP_VHOST']
   end
 end
