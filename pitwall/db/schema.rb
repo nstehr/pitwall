@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.0].define(version: 2022_11_29_032433) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "orchestrators", force: :cascade do |t|
     t.string "status"
     t.string "name"
@@ -38,7 +41,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_11_29_032433) do
     t.string "image"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "orchestrator_id"
+    t.bigint "orchestrator_id"
     t.string "status"
     t.string "public_key"
     t.index ["orchestrator_id"], name: "index_virtual_machines_on_orchestrator_id"

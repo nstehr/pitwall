@@ -2,6 +2,7 @@ require 'jwt'
 require 'openssl'
 require 'net/http'
 
+# based on: https://blog.plataformatec.com.br/2019/01/custom-authentication-methods-with-devise/
 class ApiTokenStrategy < Warden::Strategies::Base
     def valid?
       api_token.present?
