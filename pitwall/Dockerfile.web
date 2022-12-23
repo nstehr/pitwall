@@ -51,6 +51,7 @@ RUN RAILS_ENV=production SECRET_KEY_BASE=assets bundle exec rake assets:precompi
 RUN mkdir -p tmp/pids
 
 ENV RAILS_LOG_TO_STDOUT=true
+# I know I should stick a reverse proxy in front to serve these, but want to keep things self-contained for now
 ENV RAILS_SERVE_STATIC_FILES=true
 # Launch the server
 CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "-E", "production"]
