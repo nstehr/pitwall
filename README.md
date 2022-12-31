@@ -23,6 +23,8 @@ This can be setup with:
 ```
 
 ### SSH to VM from host
+Assuming `id_firecracker` public key is provided when provisioning the VM.
+
 ```
 ssh -i id_firecracker -p 2222 -o 'PubkeyAcceptedKeyTypes +ssh-rsa' fred@172.30.0.3
 ```
@@ -68,3 +70,15 @@ The pitwall and powerunit binaries need to be in the same location on the host, 
   One design decision to note here is that the generated code from the protobufs is done locally and checked in, this can be done with rake/make (depending on which product)
 
   I have been experimenting with Dagger for CI.  The source code is in `builder` and running `go run . -workDir <base directory>` will trigger a full build that produces images for the web app and the a worker image as well as binaries for the orchestrator and init binary
+
+  ## API
+  - Get authentication token from Keycloak: 
+  ```
+ POST http://localhost:8080/realms/pitwall/protocol/openid-connect/token
+  ```
+![image](images/api-body.png)
+- username: username of the subject making the call
+- password: password for the above
+- grant_type: `password`
+- client_id: `pitwall-cli`
+- client_secret: can be obtained from keycloak
