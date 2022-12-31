@@ -1,6 +1,6 @@
 # Pitwall
 
-System for deploying spinning up Firecracker VMs.  The current design is to take a docker image, extract the filesystem, inject a custom init and then spin up the VM.
+System for spinning up Firecracker VMs.  The current design is to take a docker image, extract the filesystem, inject a custom init and then spin up the VM.
 
 Tested with: Firecracker v1.1.0
 
@@ -57,7 +57,7 @@ RABBIT_SERVER=
 The pitwall and powerunit binaries need to be in the same location on the host, and the firecracker binary needs to be on the path.
 
 ### Keycloak
- - create database 'keycloak' 
+ - create database 'keycloak' in postgres
  - create realm 'pitwall'
  - create client 'pitwall-ui'
  ![image](images/pitwall-ui.png)
@@ -67,9 +67,9 @@ The pitwall and powerunit binaries need to be in the same location on the host, 
   ## Building
   The go based projects have make files to build locally.  The rails app can be started with `rails s`, worker app can be started with ` WORKERS=OrchestratorVmStatusWorker,OrchestratorHealthWorker bundle exec rake sneakers:run`
 
-  One design decision to note here is that the generated code from the protobufs is done locally and checked in, this can be done with rake/make (depending on which product)
+  One design decision to note here is that the generated code from the protobufs is done locally and checked in, this can be done with rake/make (depending on which project)
 
-  I have been experimenting with Dagger for CI.  The source code is in `builder` and running `go run . -workDir <base directory>` will trigger a full build that produces images for the web app and the a worker image as well as binaries for the orchestrator and init binary
+  I have been experimenting with Dagger for CI.  The source code is in `builder` and running `go run . -workDir <base directory>` will trigger a full build that produces images for the web app and the a worker app as well as binaries for the orchestrator and init binary
 
   ## API
   - Get authentication token from Keycloak: 
