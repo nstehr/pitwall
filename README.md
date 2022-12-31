@@ -82,3 +82,5 @@ The pitwall and powerunit binaries need to be in the same location on the host, 
 - grant_type: `password`
 - client_id: `pitwall-cli`
 - client_secret: can be obtained from keycloak
+
+- Now to call Pitwall APIs (under API route), pass returned key in the Authorization header as a Bearer token
