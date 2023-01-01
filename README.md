@@ -15,7 +15,7 @@ Tested with: Firecracker v1.1.0
 - Postgres: DB for Pitwall and Keycloak
 
 ## Host Networking
-Networking on the Firecracker VM hosts is current uses a single bridge device plus iptables for inbound and outbound connections; with each VM connecting to a TAP interface that is attached to the bridge.
+Networking on the Firecracker VM hosts currently uses a single bridge device plus iptables for inbound and outbound connections; with each VM connecting to a TAP interface that is attached to the bridge.
 
 This can be setup with:
 ```
@@ -38,7 +38,7 @@ AMQP_SERVER=
 AMPQ_PORT=
 AMQP_USER=
 AMQP_PASSWORD=
-AMQP_VHOST=/
+AMQP_VHOST=
 PITWALL_DB_HOST=
 PITWALL_DB_USER=
 PITWALL_DB_PASSWORD=
@@ -65,7 +65,7 @@ The pitwall and powerunit binaries need to be in the same location on the host, 
   ![image](images/pitwall-cli.png)
 
   ## Building
-  The go based projects have make files to build locally.  The rails app can be started with `rails s`, worker app can be started with ` WORKERS=OrchestratorVmStatusWorker,OrchestratorHealthWorker bundle exec rake sneakers:run`
+  The go based projects have makefiles to build locally.  The rails app can be started with `rails s`, worker app can be started with ` WORKERS=OrchestratorVmStatusWorker,OrchestratorHealthWorker bundle exec rake sneakers:run`
 
   One design decision to note here is that the generated code from the protobufs is done locally and checked in, this can be done with rake/make (depending on which project)
 
