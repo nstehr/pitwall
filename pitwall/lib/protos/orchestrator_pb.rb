@@ -8,6 +8,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "orch.Orchestrator" do
       optional :name, :string, 1
       optional :status, :string, 2
+      optional :healthCheck, :string, 3
     end
   end
 end

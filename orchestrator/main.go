@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -21,6 +23,7 @@ var (
 	subnet        = flag.String("subnet", "172.30.0.0/16", "subnet to use on host for VM ips")
 	hostInterface = flag.String("hostInterface", "wlp2s0", "host interface to use for outbound traffic")
 	setup         = flag.Bool("setup", false, "setups up host networking (bridge and iptables rules)")
+	healthPort    = flag.Int("healthPort", 9119, "port for health check endpoint")
 )
 
 const (
@@ -45,7 +48,7 @@ func main() {
 	if *setup {
 		log.Println("Initializing host networking setup")
 		if err != nil {
-			log.Fatalf("failed to create ipam servie: %v", err)
+			log.Fatalf("failed to create ipam service: %v", err)
 		}
 		err = initHostNetworking(ipam, *hostInterface)
 		if err != nil {
@@ -66,9 +69,18 @@ func main() {
 		log.Fatalf("failed to reserve host gateway: %v", err)
 	}
 	verifyFirecrackerExists()
-
+	initHealthCheck(*healthPort)
+	// bit of a hack to use the host interface for dual purpose, TODO: fix better later :)
+	healthUrl := ""
+	hostIp, err := getHostIP(*hostInterface)
+	if err != nil {
+		log.Println(err)
+	} else {
+		healthUrl = fmt.Sprintf("http://%s:%d/health", hostIp, *healthPort)
+	}
+	fmt.Printf("Registering orchestrator with name: %s and health check url: %s\n", *name, healthUrl)
 	ctx := context.Background()
-	err = orchestrator.SignalOrchestratorAlive(ctx, *name)
+	err = orchestrator.SignalOrchestratorAlive(ctx, *name, healthUrl)
 	if err != nil {
 		log.Println(err)
 	}
@@ -83,7 +95,7 @@ func main() {
 	<-sig
 	// Exit by user
 	log.Println("Ctrl-c detected, shutting down")
-
+	err = orchestrator.SignalOrchestratorDown(ctx, *name)
 	log.Println("Goodbye.")
 
 }
@@ -164,4 +176,34 @@ func initHostNetworking(ipam *vm.Ipam, outboundInterface string) error {
 	// iptables -A FORWARD -i fcbr0 -o wlp2s0 -j ACCEPT
 	err = ipt.Append("filter", "FORWARD", "-i", vm.BridgeName, "-o", outboundInterface, "-j", "ACCEPT")
 	return err
+}
+
+func health(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "up\n")
+}
+
+func initHealthCheck(port int) {
+	http.HandleFunc("/health", health)
+	go http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+}
+
+func getHostIP(hostInterface string) (string, error) {
+	iface, err := net.InterfaceByName(hostInterface)
+	if err != nil {
+		return "", err
+	}
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return "", err
+	}
+	var hostAddr net.IP
+	for _, addr := range addrs {
+		if hostAddr = addr.(*net.IPNet).IP.To4(); hostAddr != nil {
+			break
+		}
+	}
+	if hostAddr == nil {
+		return "", fmt.Errorf("Could not get address for interface: %s", hostInterface)
+	}
+	return hostAddr.String(), nil
 }

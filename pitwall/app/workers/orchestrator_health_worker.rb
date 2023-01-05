@@ -6,7 +6,8 @@ class OrchestratorHealthWorker
     from_queue "orchestrator.health", env: nil
     def work(health)
       orch = ::Orch::Orchestrator.decode(health)
-      Orchestrator.upsert({name: orch.name, status:orch.status}, unique_by: :name)
+      data = {name: orch.name, status:orch.status, health_check_url: (orch.healthCheck if !orch.healthCheck.blank?)}.compact
+      Orchestrator.upsert(data, unique_by: :name)
       ack! 
     end
   end

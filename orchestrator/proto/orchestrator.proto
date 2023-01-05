@@ -9,4 +9,5 @@ option go_package = "../orchestrator";
 message Orchestrator {
     string name = 1;
     string status = 2;
+    string healthCheck = 3;
 }
