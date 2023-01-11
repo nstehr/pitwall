@@ -8,6 +8,10 @@ class OrchestratorHealthWorker
       orch = ::Orch::Orchestrator.decode(health)
       data = {name: orch.name, status:orch.status, health_check_url: (orch.healthCheck if !orch.healthCheck.blank?)}.compact
       Orchestrator.upsert(data, unique_by: :name)
+      if !orch.healthCheck.blank?
+        health_checker = HealthChecker.new
+        health_checker.schedule(orch)
+      end
       ack! 
     end
   end

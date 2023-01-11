@@ -79,7 +79,7 @@ func buildRailsApp(ctx context.Context, client *dagger.Client, project *dagger.D
 		WithUser("app").
 		WithEnvVariable("RAILS_LOG_TO_STDOUT", "true").
 		WithEnvVariable("RAILS_ENV", "production").
-		WithEnvVariable("WORKERS", "OrchestratorVmStatusWorker,OrchestratorHealthWorker").
+		WithEnvVariable("WORKERS", "OrchestratorVmStatusWorker,OrchestratorHealthWorker,OrchestratorHealthCheckWorker").
 		WithEntrypoint([]string{"bundle", "exec", "rake", "sneakers:run"})
 
 	_, err := web.Export(ctx, "./web")

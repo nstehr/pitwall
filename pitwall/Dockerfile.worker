@@ -50,6 +50,6 @@ COPY --chown=app . ./
 ENV RAILS_LOG_TO_STDOUT=true
 # Launch the listener
 # WORKERS=OrchestratorVmStatusWorker,OrchestratorHealthWorker bundle exec rake sneakers:run
-ENV WORKERS=OrchestratorVmStatusWorker,OrchestratorHealthWorker
+ENV WORKERS=OrchestratorVmStatusWorker,OrchestratorHealthWorker,OrchestratorHealthCheckWorker
 ENV RAILS_ENV=production
 CMD ["bundle", "exec", "rake", "sneakers:run"]
