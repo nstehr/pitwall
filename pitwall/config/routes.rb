@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  root to: 'home#index'
   Devise.setup do |config|
     devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
   end
@@ -11,4 +12,5 @@ Rails.application.routes.draw do
       resources :orchestrators
   end
   resources :virtual_machines
+  resources :orchestrators
 end

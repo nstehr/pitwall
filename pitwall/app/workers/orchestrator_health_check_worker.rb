@@ -13,6 +13,8 @@ class OrchestratorHealthCheckWorker
             health_checker.schedule(orch)
         else
             puts "health check failed"
+            data = {name: orch.name, status:"DOWN"}
+            Orchestrator.upsert(data, unique_by: :name)
         end
       end
       ack! 

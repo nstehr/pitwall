@@ -1,0 +1,12 @@
+<div>
+<ul>
+    <% @orchestrators.each do |orchestrator| %>
+      <li>
+        <%= orchestrator.name %>
+        <%= orchestrator.updated_at %>
+        <%= orchestrator.status %>
+      </li>
+    <% end %>
+</ul>
+
+</div>

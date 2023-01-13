@@ -56,6 +56,7 @@ gem 'bunny'
 gem 'google-protobuf'
 # bootstrap
 gem 'bootstrap', '~> 5.2.0' 
+gem "font-awesome-sass", "~> 6.2.1"
 
 # auth
 gem 'devise'
