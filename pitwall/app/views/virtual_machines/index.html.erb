@@ -1,22 +1,35 @@
 <%= turbo_frame_tag "vm_main" do %>
-<%= render "filter" %>
+  <%= render "filter" %>
 
-<%= turbo_frame_tag "vm_list" do %>
-  <div>
-<ul>
-    <% @virtual_machines.each do |virtualMachine| %>
-      <li>
-        <%= virtualMachine.image %>
-        <%= virtualMachine.created_at %>
-        <%= virtualMachine.status %>
-      </li>
-    <% end %>
-</ul>
-<%== pagy_bootstrap_nav(@pagy) %>
-</div>
-<% end %>
+  <%= turbo_frame_tag "vm_list" do %>
+    <div>
+
+      <div class="d-flex flex-row">
+
+        <% @virtual_machines.each do |virtualMachine| %>
+
+          <div class="card" style="width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title"><%= virtualMachine.image %></h5>
+              <h6 class="card-subtitle mb-2 text-muted">Updated at:
+                <%= virtualMachine.updated_at.to_formatted_s(:long) %></h6>
+              <div>
+                <span style="color: <%= get_status_color(virtualMachine.status) %>;"><i class="fa-sharp fa-solid fa-circle"></i></span>
+                <span class="card-text">
+                  <%= virtualMachine.status %></span>
+              </div>
+            </div>
+          </div>
+
+        <% end %>
+
+      </div>
+
+      <%== pagy_bootstrap_nav(@pagy) %>
+    </div>
+  <% end %>
 
   <div>
     <%= link_to "New VM", new_virtual_machine_path, data: { turbo_frame: "vm_main" } %>
-    </div>
+  </div>
 <% end %>

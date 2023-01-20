@@ -3,8 +3,18 @@
   method: :get,
   data: { controller: "filters", filters_target: "form", turbo_frame: "vm_list" } do |f| %>
   <div class="filters-group">
-<%= f.label :category, "Filter by status" %>
-<%= f.select :status, [["INIT", "INIT"], ["RUNNING", "RUNNING"], ["STOPPED", "STOPPED"], ["STOPPING", "STOPPING"], ["ERROR", "ERROR"], ["BOOTING", "BOOTING"], ["BUILDING_FILESYSTEM", "BUILDING_FILESYSTEM"]], {selected: params[:status], include_blank: true },
-    { data: { action: "filters#submit" } } %>
+    <%= f.label :category, "Filter by status" %>
+    <%= f.select :status,
+             [
+               %w[INIT INIT],
+               %w[RUNNING RUNNING],
+               %w[STOPPED STOPPED],
+               %w[STOPPING STOPPING],
+               %w[ERROR ERROR],
+               %w[BOOTING BOOTING],
+               %w[BUILDING_FILESYSTEM BUILDING_FILESYSTEM]
+             ],
+             { selected: params[:status], include_blank: true },
+             { data: { action: "filters#submit" } } %>
   </div>
 <% end %>

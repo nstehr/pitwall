@@ -1,12 +1,19 @@
 <div>
-<ul>
-    <% @orchestrators.each do |orchestrator| %>
-      <li>
-        <%= orchestrator.name %>
-        <%= orchestrator.updated_at %>
-        <%= orchestrator.status %>
-      </li>
-    <% end %>
-</ul>
+
+  <% @orchestrators.each do |orchestrator| %>
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title"><%= orchestrator.name %></h5>
+        <h6 class="card-subtitle mb-2 text-muted">Updated at:
+          <%= orchestrator.updated_at.to_formatted_s(:long) %></h6>
+        <div>
+          <span style="color: <%= get_orch_status_color(orchestrator.status) %>;"><i class="fa-sharp fa-solid fa-circle"></i></span>
+          <span class="card-text">
+            <%= orchestrator.status %></span>
+        </div>
+      </div>
+    </div>
+
+  <% end %>
 
 </div>
