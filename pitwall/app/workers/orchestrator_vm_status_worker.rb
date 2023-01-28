@@ -5,12 +5,12 @@ class OrchestratorVmStatusWorker
     from_queue "orchestrator.vm.status", env: nil
     def work(msg)
         vm = ::Vm::VM.decode(msg)
-        virtualMachine = VirtualMachine.find(vm.id)
-        virtualMachine.update(
+        virtual_machine = VirtualMachine.find(vm.id)
+        virtual_machine.update(
             status: vm.status
         )
         if vm.status == "STOPPED"
-            virtualMachine.update(
+            virtual_machine.update(
             orchestrator_id: nil 
         )
         end

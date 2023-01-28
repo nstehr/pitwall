@@ -1,9 +1,9 @@
-<%= form_with model: virtualMachine, id: dom_id(virtualMachine) do |form| %>
-  <% if virtualMachine.errors.any? %>
+<%= form_with model: virtual_machine, id: dom_id(virtual_machine) do |form| %>
+  <% if virtual_machine.errors.any? %>
     <div role="alert">
-      Could not create a virtualMachine due to the following issues:
+      Could not create a virtual machine due to the following issues:
       <ul>
-        <% virtualMachine.errors.each do |error| %>
+        <% virtual_machine.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>

@@ -6,17 +6,17 @@
 
       <div class="d-flex flex-row">
 
-        <% @virtual_machines.each do |virtualMachine| %>
+        <% @virtual_machines.each do |virtual_machine| %>
 
           <div class="card" style="width: 18rem;">
             <div class="card-body">
-              <h5 class="card-title"><%= virtualMachine.image %></h5>
+              <h5 class="card-title"><%= virtual_machine.image %></h5>
               <h6 class="card-subtitle mb-2 text-muted">Updated at:
-                <%= virtualMachine.updated_at.to_formatted_s(:long) %></h6>
+                <%= virtual_machine.updated_at.to_formatted_s(:long) %></h6>
               <div>
-                <span style="color: <%= get_status_color(virtualMachine.status) %>;"><i class="fa-sharp fa-solid fa-circle"></i></span>
+                <span style="color: <%= get_status_color(virtual_machine.status) %>;"><i class="fa-sharp fa-solid fa-circle"></i></span>
                 <span class="card-text">
-                  <%= virtualMachine.status %></span>
+                  <%= virtual_machine.status %></span>
               </div>
             </div>
           </div>
