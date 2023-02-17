@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - 5432:5432
   pgadmin:
     image: dpage/pgadmin4
     environment:
@@ -14,22 +14,86 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_LISTEN_PORT: 80
     ports:
-      - "9090:80"
+      - 9090:80
     volumes:
       - ./tmp/pg-admin:/var/lib/pgadmin
   rabbitmq:
     image: rabbitmq:3.10-management
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - 5672:5672
+      - 15672:15672
   keycloak:
     image: quay.io/keycloak/keycloak:20.0.1
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      - "8080:8080"
+      - 8080:8080
     command: 
       - start-dev --db postgres --db-username postgres --db-password password --db-url-host db
     depends_on:
     - db
+  ziti-controller:
+    image: openziti/quickstart:latest
+    ports:
+      - 1280:1280
+    environment:
+      ZITI_CONTROLLER_RAWNAME: ziti-controller
+    networks:
+      ziti:
+        aliases:
+          - ziti-edge-controller
+    volumes:
+      - ./tmp/ziti:/persistent
+    entrypoint:
+      - "/var/openziti/scripts/run-controller.sh"
+  ziti-controller-init-container:
+    image: openziti/quickstart:latest
+    depends_on:
+      - ziti-controller
+    environment:
+      ZITI_CONTROLLER_RAWNAME: ziti-controller
+      ZITI_EDGE_CONTROLLER_RAWNAME: ziti-edge-controller
+    networks:
+      ziti:
+        aliases:
+          - ziti-edge-controller-init-container
+    volumes:
+      - ./tmp/ziti:/persistent
+    entrypoint:
+      - "/var/openziti/scripts/run-with-ziti-cli.sh"
+    command:
+      - "/var/openziti/scripts/access-control.sh"
+  ziti-edge-router:
+    image: "openziti/quickstart:latest"
+    depends_on:
+      - ziti-controller
+    environment:
+      ZITI_CONTROLLER_RAWNAME: ziti-controller
+      ZITI_EDGE_CONTROLLER_RAWNAME: ziti-edge-controller
+      ZITI_EDGE_ROUTER_RAWNAME: ziti-edge-router
+      ZITI_EDGE_ROUTER_ROLES: public
+    ports:
+      - 3022:3022
+    networks:
+      - ziti
+    volumes:
+      - ./tmp/ziti:/persistent
+    entrypoint: /bin/bash
+    command: "/var/openziti/scripts/run-router.sh edge"
+  ziti-console:
+    image: openziti/zac
+    environment:
+      - ZAC_SERVER_CERT_CHAIN=/persistent/pki/ziti-controller-intermediate/certs/ziti-controller-server.cert
+      - ZAC_SERVER_KEY=/persistent/pki/ziti-controller-intermediate/keys/ziti-controller-server.key
+    ports:
+      - 1408:1408
+      - 8443:8443
+    working_dir: /usr/src/app
+    volumes:
+      - ./tmp/ziti:/persistent
+    networks:
+      - ziti
+networks:
+  ziti:
+    driver: bridge
