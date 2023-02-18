@@ -15,7 +15,7 @@ namespace :rabbitmq do
       # create the exchange
       exchange = ch.topic(exchange_name, :durable => true)
       queue_health = ch.queue("orchestrator.health", :durable => true)
-      queue_status = ch.queue("orchestrator.vm.status", :durable => true)
+      queue_all_status = ch.queue("orchestrator.vm.status.web", :durable => true)
       queue_delay =  ch.queue("orchestrator.healthcheck.schedule", arguments: {
         # set the dead-letter exchange to the default queue
         'x-dead-letter-exchange' => exchange_name,
@@ -27,7 +27,7 @@ namespace :rabbitmq do
       queue_work = ch.queue("orchestrator.healthcheck.execute", :durable => true)
       # bind queue to exchange
       queue_health.bind(exchange, routing_key: "orchestrator.health")
-      queue_status.bind(exchange, routing_key: "orchestrator.vm.status")
+      queue_all_status.bind(exchange, routing_key: "orchestrator.vm.status.*")
       queue_delay.bind(exchange,  routing_key: "orchestrator.healthcheck.schedule")
       queue_work.bind(exchange,  routing_key: "orchestrator.healthcheck.execute")
       conn.close

@@ -149,7 +149,7 @@ func sendStatusUpdate(ctx context.Context, vm *VM) error {
 		return err
 	}
 
-	stream.Send(ctx, "orchestrator.vm.status", out)
+	stream.Send(ctx, fmt.Sprintf("orchestrator.vm.status.%s", vm.Status), out)
 	if err != nil {
 		return err
 	}
