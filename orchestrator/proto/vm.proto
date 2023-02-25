@@ -28,8 +28,19 @@ message StopVMRequest {
     int64 id = 1;
 }
 
+message Service {
+    string name = 1;
+    int64 port = 2;
+    bool private = 3;
+
+}
+
 message VM {
     int64 id = 1;
     string imageName = 2;
     string status = 3;
+    string host = 4;
+    string privateIp = 5;
+    repeated Service services = 6; 
+
 }

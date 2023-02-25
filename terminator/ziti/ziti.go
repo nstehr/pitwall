@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -111,6 +112,8 @@ type Identity struct {
 }
 
 type IdentityType int64
+type ServicePolicyType int64
+type ServicePolicySemantic int64
 
 const (
 	ztSession = "zt-session"
@@ -123,12 +126,31 @@ const (
 	Router
 )
 
+const (
+	Dial ServicePolicyType = iota
+	Bind
+)
+
+const (
+	AnyOf = iota
+	AllOf
+)
+
 func (it IdentityType) String() string {
 	return []string{"User", "Device", "Service", "Router"}[it]
 }
 
+func (spt ServicePolicyType) String() string {
+	return []string{"Dial", "Bind"}[spt]
+}
+
+func (sc ServicePolicySemantic) String() string {
+	return []string{"AnyOf", "AllOf"}[sc]
+}
+
 func NewClient(ctrlUrl, username, password string) (*Client, error) {
-	// wrapping my own client for management to be able to create services and identities, programmatically
+	// writing my own client for management to be able to create services and identities, programmatically
+	// initially looked at embedding the sdk RestClient, but found at this point I wasn't using much from it
 	// TODO: we since this all about secure, we should fix this
 	return &Client{ctrlUrl: ctrlUrl, username: username, password: password}, nil
 }
@@ -246,19 +268,21 @@ func (c *Client) CreateService(name string, encryptionRequired bool, attributes 
 		return "", err
 	}
 	defer resp.Body.Close()
-	var result map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&result)
+	return extractId(resp.Body)
+}
+
+func (c *Client) CreateServicePolicy(policyType ServicePolicyType, name string, identityRoles []string, serviceRoles []string, semantic ServicePolicySemantic) (string, error) {
+	payload := map[string]interface{}{"type": policyType.String(), "name": name, "identityRoles": identityRoles, "serviceRoles": serviceRoles, "semantic": semantic.String()}
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
 	}
-	val, ok := result["error"]
-	if ok {
-		cause := val.(map[string]interface{})["cause"]
-		reason := cause.(map[string]interface{})["reason"]
-		return "", errors.New(reason.(string))
+	resp, err := c.makeRequest(http.MethodPost, "edge/management/v1/service-policies", body)
+	if err != nil {
+		return "", err
 	}
-	data := result["data"].(map[string]interface{})
-	return data["id"].(string), nil
+	defer resp.Body.Close()
+	return extractId(resp.Body)
 }
 
 func (c *Client) makeRequest(method string, url string, body []byte) (*http.Response, error) {
@@ -286,4 +310,20 @@ func (c *Client) makeRequest(method string, url string, body []byte) (*http.Resp
 	}
 
 	return resp, nil
+}
+
+func extractId(body io.ReadCloser) (string, error) {
+	var result map[string]interface{}
+	err := json.NewDecoder(body).Decode(&result)
+	if err != nil {
+		return "", err
+	}
+	val, ok := result["error"]
+	if ok {
+		cause := val.(map[string]interface{})["cause"]
+		reason := cause.(map[string]interface{})["reason"]
+		return "", errors.New(reason.(string))
+	}
+	data := result["data"].(map[string]interface{})
+	return data["id"].(string), nil
 }

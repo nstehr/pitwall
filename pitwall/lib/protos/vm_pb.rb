@@ -20,10 +20,18 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "vm.StopVMRequest" do
       optional :id, :int64, 1
     end
+    add_message "vm.Service" do
+      optional :name, :string, 1
+      optional :port, :int64, 2
+      optional :private, :bool, 3
+    end
     add_message "vm.VM" do
       optional :id, :int64, 1
       optional :imageName, :string, 2
       optional :status, :string, 3
+      optional :host, :string, 4
+      optional :privateIp, :string, 5
+      repeated :services, :message, 6, "vm.Service"
     end
     add_enum "vm.Type" do
       value :CREATE, 0
@@ -36,6 +44,7 @@ module Vm
   VMRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.VMRequest").msgclass
   CreateVMRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.CreateVMRequest").msgclass
   StopVMRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.StopVMRequest").msgclass
+  Service = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.Service").msgclass
   VM = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.VM").msgclass
   Type = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("vm.Type").enummodule
 end
