@@ -78,7 +78,7 @@ func main() {
 	} else {
 		healthUrl = fmt.Sprintf("http://%s:%d/health", hostIp, *healthPort)
 	}
-	fmt.Printf("Registering orchestrator with name: %s and health check url: %s\n", *name, healthUrl)
+	log.Printf("Registering orchestrator with name: %s and health check url: %s\n", *name, healthUrl)
 	ctx := context.Background()
 	err = orchestrator.SignalOrchestratorAlive(ctx, *name, healthUrl)
 	if err != nil {
@@ -149,7 +149,7 @@ func initHostNetworking(ipam *vm.Ipam, outboundInterface string) error {
 	if err != nil {
 		return err
 	}
-	log.Println(fmt.Sprintf("Gateway IP for bridge: %s\n", ip))
+	log.Printf("Gateway IP for bridge: %s\n", ip)
 	ipWithCidr := fmt.Sprintf("%s/24", ip)
 	addr, err := netlink.ParseAddr(ipWithCidr)
 	if err != nil {

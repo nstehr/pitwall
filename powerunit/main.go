@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -47,11 +46,11 @@ func main() {
 	// just wait for a signal
 	err = cmd.Start()
 	if err != nil {
-		panic(fmt.Sprintf("could not start shell: %s", err))
+		log.Fatalf("could not start shell: %s", err)
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		panic(fmt.Sprintf("error running shell: %s", err))
+		log.Fatalf("error running shell: %s", err)
 	}
 }
