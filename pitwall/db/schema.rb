@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_05_032304) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_26_033330) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -34,6 +34,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_05_032304) do
     t.datetime "updated_at", null: false
     t.string "provider"
     t.string "uid"
+    t.integer "virtual_machines_count"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -45,8 +46,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_05_032304) do
     t.bigint "orchestrator_id"
     t.string "status"
     t.string "public_key"
+    t.bigint "user_id", null: false
+    t.string "name"
+    t.index ["name", "user_id"], name: "index_virtual_machines_on_name_and_user_id", unique: true
     t.index ["orchestrator_id"], name: "index_virtual_machines_on_orchestrator_id"
+    t.index ["user_id"], name: "index_virtual_machines_on_user_id"
   end
 
   add_foreign_key "virtual_machines", "orchestrators"
+  add_foreign_key "virtual_machines", "users"
 end

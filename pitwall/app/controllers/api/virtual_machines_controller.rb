@@ -12,7 +12,15 @@ class Api::VirtualMachinesController < Api::ApiController
 
     def create
         placer = VirtualMachinePlacer.new
-        @virtual_machine = placer.place(params[:image], params[:public_key])
+       
+
+        vm = VirtualMachine.new(
+            image: params[:image],
+            public_key: params[:public_key],
+            user: current_user,
+            name: params[:name]
+        )
+        @virtual_machine = placer.place(vm)
         render json: @virtual_machine
     end 
 

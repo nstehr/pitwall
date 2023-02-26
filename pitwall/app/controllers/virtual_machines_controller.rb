@@ -22,7 +22,16 @@ class VirtualMachinesController < ApplicationController
         placer = VirtualMachinePlacer.new
         image = params[:virtual_machine][:image]
         public_key = params[:virtual_machine][:public_key]
-        @virtual_machine = placer.place(image, public_key)
+        name = params[:virtual_machine][:name]
+
+        vm = VirtualMachine.new(
+            image: image,
+            public_key: public_key,
+            user: current_user,
+            name: name
+        )
+
+        @virtual_machine = placer.place(vm)
         if @virtual_machine.valid?
             redirect_to virtual_machines_path, notice: "VM created successfully"
         else

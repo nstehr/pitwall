@@ -2,6 +2,7 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :timeoutable, :omniauthable, omniauth_providers: %i[keycloakopenid]
+  has_many :virtual_machines 
   
   def self.from_omniauth(auth)
           find_or_create_by(provider: auth.provider, uid: auth.uid) do |user|

@@ -1,7 +1,7 @@
 require "#{Rails.root}/lib/protos/vm_pb.rb"
 
 class VirtualMachinePlacer
-    def place(image, public_key)
+    def place(vm)
         # this logic will change once the orchestrator is enriched
         # for now, select least used orchestrator
         orchestrators = Orchestrator.all
@@ -11,15 +11,14 @@ class VirtualMachinePlacer
                 orchestrator = o
             end
         end
-           
-        vm = VirtualMachine.create(
-            image: image,
-            orchestrator: orchestrator,
-            status: "INIT",
-            public_key: public_key
-        )
-        if vm.valid?
-            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => image, :publicKey => public_key)
+       
+        vm.orchestrator = orchestrator
+        vm.status =  "INIT"
+       
+        saved = vm.save
+
+        if saved
+            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => vm.image, :publicKey => vm.public_key)
             req = ::Vm::VMRequest.new(:type => ::Vm::Type::CREATE, :create => create)
             message = ::Vm::VMRequest.encode(req)
             routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
