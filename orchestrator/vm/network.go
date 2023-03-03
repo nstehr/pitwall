@@ -1,5 +1,6 @@
 package vm
 
+// TODO: consider switching to CNI based networking, so this could potentially go away
 import (
 	"context"
 	"fmt"

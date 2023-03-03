@@ -57,7 +57,7 @@ func (m *Manager) dispatch(msg []byte) {
 	case Type_CREATE:
 		go m.onVMCreate(req.GetCreate())
 	case Type_DELETE:
-		go m.onVMStop(req.GetStop())
+		go m.onVMStop(req.GetStop().Id)
 	}
 }
 
@@ -114,14 +114,28 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 	vm.Status = "RUNNING"
 	sendStatusUpdate(ctx, &vm)
 
+	// not sure if this is the way, but Wait()
+	// seems to be the way I can catch if the VM is terminated on the host
+	go func() {
+		ctx := context.Background()
+		machine.machine.Wait(ctx)
+		m.releaseResources(req.Id)
+	}()
+
 }
 
-func (m *Manager) onVMStop(req *StopVMRequest) {
-	if machine, ok := m.virtualMachines[req.Id]; ok {
-		vm := VM{}
-		vm.Id = req.Id
-		ctx := context.Background()
+func (m *Manager) onVMStop(vmId int64) {
+	if machine, ok := m.virtualMachines[vmId]; ok {
 		machine.stop()
+	}
+
+}
+
+func (m *Manager) releaseResources(vmId int64) {
+	if machine, ok := m.virtualMachines[vmId]; ok {
+		vm := VM{}
+		vm.Id = vmId
+		ctx := context.Background()
 		err := releaseTap(machine.hostInterface)
 		if err != nil {
 			log.Println("Error removing tap interface: ", err)
@@ -140,7 +154,6 @@ func (m *Manager) onVMStop(req *StopVMRequest) {
 		vm.Status = "STOPPED"
 		sendStatusUpdate(ctx, &vm)
 	}
-
 }
 
 func sendStatusUpdate(ctx context.Context, vm *VM) error {

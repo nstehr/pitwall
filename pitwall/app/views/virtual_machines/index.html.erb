@@ -10,7 +10,8 @@
 
           <div class="card" style="width: 18rem;">
             <div class="card-body">
-              <h5 class="card-title"><%= virtual_machine.image %></h5>
+              <h5 class="card-title"><%= virtual_machine.name %></h5>
+              <h6 class="card-title"><%= virtual_machine.image %></h6>
               <h6 class="card-subtitle mb-2 text-muted">Updated at:
                 <%= virtual_machine.updated_at.to_formatted_s(:long) %></h6>
               <div>
@@ -18,6 +19,15 @@
                 <span class="card-text">
                   <%= virtual_machine.status %></span>
               </div>
+              <% if !(virtual_machine.status == "STOPPED" || virtual_machine.status == "STOPPING") %>
+              <div>
+              <%= button_to "Stop",
+              virtual_machine_path(virtual_machine),
+              method: :delete,
+              form: { data: { turbo_confirm: "Are you sure?" } },
+              class: "btn btn--light" %>
+              </div>
+              <% end %>
             </div>
           </div>
 
