@@ -16,6 +16,8 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :id, :int64, 1
       optional :imageName, :string, 2
       optional :publicKey, :string, 3
+      optional :name, :string, 4
+      optional :owner, :string, 5
     end
     add_message "vm.StopVMRequest" do
       optional :id, :int64, 1
@@ -32,6 +34,8 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :host, :string, 4
       optional :privateIp, :string, 5
       repeated :services, :message, 6, "vm.Service"
+      optional :name, :string, 7
+      optional :owner, :string, 8
     end
     add_enum "vm.Type" do
       value :CREATE, 0

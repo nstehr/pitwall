@@ -18,7 +18,7 @@ class VirtualMachinePlacer
         saved = vm.save
 
         if saved
-            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => vm.image, :publicKey => vm.public_key)
+            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => vm.image, :publicKey => vm.public_key, :name => vm.name, :owner => vm.user.username)
             req = ::Vm::VMRequest.new(:type => ::Vm::Type::CREATE, :create => create)
             message = ::Vm::VMRequest.encode(req)
             routing_key = "orchestrator.vm.crud.#{orchestrator.name}"
