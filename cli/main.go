@@ -63,11 +63,23 @@ func main() {
 		log.Fatal("Error with ssh client session: ", err)
 	}
 
+	stdInFd := int(os.Stdin.Fd())
+	stdOutFd := int(os.Stdout.Fd())
+
+	oldState, err := term.MakeRaw(stdInFd)
+	if err != nil {
+		log.Fatal("Error with ssh client session: ", err)
+	}
+	defer func() {
+		_ = session.Close()
+		_ = term.Restore(stdInFd, oldState)
+	}()
+
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
 
-	termWidth, termHeight, err := term.GetSize(int(os.Stdout.Fd()))
+	termWidth, termHeight, err := term.GetSize(stdOutFd)
 	if err != nil {
 		log.Fatal("Error with terminal sizing: ", err)
 	}

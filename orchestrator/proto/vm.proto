@@ -22,6 +22,8 @@ message CreateVMRequest {
     int64 id = 1;
     string imageName = 2;
     string publicKey = 3;
+    string name = 4;
+    string owner = 5;
 }
 
 message StopVMRequest {
@@ -41,6 +43,8 @@ message VM {
     string status = 3;
     string host = 4;
     string privateIp = 5;
-    repeated Service services = 6; 
+    repeated Service services = 6;
+    string name = 7;
+    string owner = 8;
 
 }

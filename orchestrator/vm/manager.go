@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	"github.com/nstehr/pitwall/orchestrator/stream"
@@ -66,6 +67,14 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 	vm := VM{}
 	vm.Id = req.Id
 	vm.ImageName = req.ImageName
+	vm.Name = req.Name
+	vm.Owner = req.Owner
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Println("error getting hostname: ", err)
+	} else {
+		vm.Host = hostname
+	}
 	vm.Status = "BUILDING_FILESYSTEM"
 
 	sendStatusUpdate(ctx, &vm)
@@ -100,6 +109,7 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 		return
 	}
 	vmConfig.hostInterface = tap
+	vm.PrivateIp = ip.String()
 	vm.Status = "BOOTING"
 	sendStatusUpdate(ctx, &vm)
 

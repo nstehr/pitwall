@@ -30,61 +30,6 @@ func main() {
 	if !present {
 		log.Fatal("Must specify ZITI_PASS environment variable")
 	}
-	client, err := ziti.NewClient(zitiController, zitiUser, zitiPass)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Login()
-	if err != nil {
-		log.Fatal(err)
-	}
-	id, err := client.CreateIdentity(ziti.Device, "nstehr-vm-vmName", false, []string{"nstehr-vm"})
-	if err != nil {
-		log.Fatal(err)
-	}
-	cfg, err := client.EnrollIdentity(id)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	serviceId, err := client.CreateService("nstehr-vm-ssh", true, []string{"nstehr-vm-services"})
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(serviceId)
-
-	servicePolicyId, err := client.CreateServicePolicy(ziti.Bind, "nstehr-vm-bind-policy", []string{"#nstehr-vm"}, []string{"#nstehr-vm-services"}, ziti.AllOf)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(servicePolicyId)
-
-	// NOTE TO SELF, should I create the dial policy here too?
-	// ./ziti edge create service-policy nstehr-vm-dial-policy Dial --identity-roles '#nstehr-user' --service-roles '#nstehr-vm-services'
-
-	ztx := zitiSdk.NewContextWithConfig(cfg)
-	err = ztx.Authenticate()
-	if err != nil {
-		log.Fatalf("failed to authenticate: %v", err)
-	}
-
-	lis, err := ztx.Listen("nstehr-vm-ssh")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	go func() {
-		for {
-			// Listen for an incoming connection.
-			conn, err := lis.Accept()
-			if err != nil {
-				log.Println("Error making connection")
-			}
-			// Handle connections in a new goroutine.
-			go handle(conn)
-		}
-	}()
 
 	stream.RegisterHandler("orchestrator.vm.status.terminator", "orchestrator.vm.status.RUNNING", func(msg []byte) {
 		virtualMachine := vm.VM{}
@@ -93,7 +38,79 @@ func main() {
 			log.Println("Error unmarshaling VM", err)
 			return
 		}
-		log.Println(virtualMachine.ImageName)
+		hostname, err := os.Hostname()
+		if err != nil {
+			log.Println("Error getting hostname", err)
+			return
+		}
+		if virtualMachine.Host != hostname {
+			return
+		}
+		client, err := ziti.NewClient(zitiController, zitiUser, zitiPass)
+		if err != nil {
+			log.Println("Error getting ziti client:", err)
+		}
+		err = client.Login()
+		if err != nil {
+			log.Println("Error getting logging into ziti client:", err)
+		}
+		identityName := fmt.Sprintf("%s-vm-%s", virtualMachine.Owner, virtualMachine.Name)
+		identityRole := fmt.Sprintf("%s-vm", virtualMachine.Owner)
+		id, err := client.CreateIdentity(ziti.Device, identityName, false, []string{identityRole})
+		if err != nil {
+			log.Println("Error creating identity:", err)
+		}
+		cfg, err := client.EnrollIdentity(id)
+		if err != nil {
+			log.Println("Error enrolling identity:", err)
+		}
+		// TODO: hardcode ssh as a service, next step would be to iterate from virtualMachine.Services
+		serviceName := fmt.Sprintf("%s-vm-%s-ssh", virtualMachine.Owner, virtualMachine.Name)
+		serviceRole := fmt.Sprintf("%s-vm-services", virtualMachine.Owner)
+		_, err = client.CreateService(serviceName, true, []string{serviceRole})
+		if err != nil {
+			log.Println("Error creating service:", err)
+		}
+
+		bindPolicyName := fmt.Sprintf("%s-vm-bind-policy", virtualMachine.Owner)
+		identityRoleAttr := fmt.Sprintf("#%s", identityRole)
+		serviceRoleAttr := fmt.Sprintf("#%s", serviceRole)
+		_, err = client.CreateServicePolicy(ziti.Bind, bindPolicyName, []string{identityRoleAttr}, []string{serviceRoleAttr}, ziti.AllOf)
+
+		if err != nil {
+			log.Println("Error creating service policy:", err)
+		}
+
+		// NOTE TO SELF, should I create the dial policy here too?
+		dialPolicyName := fmt.Sprintf("%s-vm-dial-policy", virtualMachine.Owner)
+		userIdentityRoleAttr := fmt.Sprintf("#%s-user", virtualMachine.Owner)
+		_, err = client.CreateServicePolicy(ziti.Dial, dialPolicyName, []string{userIdentityRoleAttr}, []string{serviceRoleAttr}, ziti.AllOf)
+		if err != nil {
+			log.Println("Error creating service policy:", err)
+		}
+		ztx := zitiSdk.NewContextWithConfig(cfg)
+		err = ztx.Authenticate()
+		if err != nil {
+			log.Println("failed to authenticate: ", err)
+		}
+
+		// TODO: same as above, we'll iterate the virtualMachine.Services
+		lis, err := ztx.Listen(serviceName)
+		if err != nil {
+			log.Println("failed to listen: ", err)
+		}
+
+		go func() {
+			for {
+				// Listen for an incoming connection.
+				conn, err := lis.Accept()
+				if err != nil {
+					log.Println("Error making connection")
+				}
+				// Handle connections in a new goroutine.
+				go handle(conn, virtualMachine.PrivateIp, 2222)
+			}
+		}()
 	})
 	// Clean exit.
 	sig := make(chan os.Signal, 1)
@@ -105,8 +122,8 @@ func main() {
 
 }
 
-func handle(conn net.Conn) {
-	vmConn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "172.30.0.2", 2222))
+func handle(conn net.Conn, remoteIp string, remotePort int) {
+	vmConn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", remoteIp, remotePort))
 	if err != nil {
 		log.Println("error making forwarding connection: ", err)
 		return
