@@ -41,7 +41,7 @@
           <div>
             <% if current_user.present? %>
               <div class="d-flex flex-row mb-2">
-                <div class="p-2"><%= current_user.email %></div>
+                <div class="p-2"><%= link_to current_user.email, profile_path, class: "nav_link" %></div>
                 <div class="p-2"><%= link_to "Sign out", destroy_user_session_path, class: "nav-link" %></div>
               </div>
             <% else %>

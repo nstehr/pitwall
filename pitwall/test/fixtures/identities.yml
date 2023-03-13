@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  public_key: MyText
+  ziti_identity: MyText
+  user: one
+
+two:
+  public_key: MyText
+  ziti_identity: MyText
+  user: two

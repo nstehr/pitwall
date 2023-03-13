@@ -13,4 +13,8 @@ Rails.application.routes.draw do
   end
   resources :virtual_machines
   resources :orchestrators
+  get 'profile', to: 'users/profile#show'
+  get 'profile/public_key', to: 'users/profile#show_public_key'
+  post 'profile/public_key', to: 'users/profile#update_public_key'
+  patch 'profile/public_key', to: 'users/profile#update_public_key'
 end

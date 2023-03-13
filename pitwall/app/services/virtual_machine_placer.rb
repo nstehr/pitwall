@@ -15,10 +15,11 @@ class VirtualMachinePlacer
         vm.orchestrator = orchestrator
         vm.status =  "INIT"
        
+        public_key = !vm.public_key.blank? ? vm.public_key : vm.user&.identity&.public_key
         saved = vm.save
 
         if saved
-            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => vm.image, :publicKey => vm.public_key, :name => vm.name, :owner => vm.user.username)
+            create = ::Vm::CreateVMRequest.new(:id => vm.id, :imageName => vm.image, :publicKey => public_key, :name => vm.name, :owner => vm.user.username)
             req = ::Vm::VMRequest.new(:type => ::Vm::Type::CREATE, :create => create)
             message = ::Vm::VMRequest.encode(req)
             routing_key = "orchestrator.vm.crud.#{orchestrator.name}"

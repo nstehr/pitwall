@@ -1,0 +1,15 @@
+<div>
+    <div class="p-2"><%= current_user.username %></div>
+    <div class="p-2"><%= current_user.email %></div>
+    <% unless current_user.identity.blank? || current_user.identity.public_key.blank? %>
+    <div class="p-2">
+        <i class="fa-sharp fa-solid fa-key"></i>
+        <span><%= get_public_key_algo(current_user.identity.public_key) %></span>
+        <span><%= get_public_key_fingerprint(current_user.identity.public_key) %></span>
+    </div>
+    <% end %>
+    <div>
+        <%= link_to "Update Public Key", profile_public_key_path %>
+        <%= link_to "Generate CLI Identity" %>
+  </div>
+</div>

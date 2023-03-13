@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_26_040614) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_11_194123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "identities", force: :cascade do |t|
+    t.text "public_key"
+    t.text "ziti_identity"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_identities_on_user_id"
+  end
 
   create_table "orchestrators", force: :cascade do |t|
     t.string "status"
@@ -55,6 +64,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_26_040614) do
     t.index ["user_id"], name: "index_virtual_machines_on_user_id"
   end
 
+  add_foreign_key "identities", "users"
   add_foreign_key "virtual_machines", "orchestrators"
   add_foreign_key "virtual_machines", "users"
 end
