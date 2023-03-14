@@ -1,5 +1,14 @@
 <%= form_with model: @identity, url: profile_public_key_path, id: dom_id(@identity) do |form| %>
-
+ <% if @identity.errors.any? %>
+    <div role="alert">
+      Could not create update public key:
+      <ul>
+        <% @identity.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 <div>
     <div>
         <%= form.label "Public Key" %>

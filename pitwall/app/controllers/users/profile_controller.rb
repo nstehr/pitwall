@@ -14,13 +14,13 @@ class Users::ProfileController < ApplicationController
     def update_public_key
        public_key = params["identity"]["public_key"]
        if current_user.identity == nil
-           identity = Identity.new(user_id: current_user.id, public_key: public_key)
+           @identity = Identity.new(user_id: current_user.id, public_key: public_key)
        else
-            identity = current_user.identity
-            identity.public_key = public_key
+            @identity = current_user.identity
+            @identity.public_key = public_key
        end
-       identity.save
-        if identity.valid?
+       @identity.save
+        if @identity.valid?
             redirect_to profile_path, notice: "Public Key Updated"
         else
             render :show_public_key, status: :unprocessable_entity

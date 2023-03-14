@@ -2,6 +2,7 @@ require 'petname'
 class VirtualMachine < ApplicationRecord
     validates :image, presence: true
     validates :name, uniqueness: { scope: :user }
+    validates :public_key, public_key: true
     belongs_to :orchestrator, counter_cache: true, optional: true
     belongs_to :user, counter_cache: true, optional: true
     after_initialize :set_default_name
