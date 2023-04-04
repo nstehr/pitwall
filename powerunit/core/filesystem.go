@@ -43,3 +43,14 @@ func mount(target string, fsType string, flags uintptr) error {
 
 	return nil
 }
+
+func LinkAll() error {
+
+	// https://utcc.utoronto.ca/~cks/space/blog/unix/DevFdImplementations
+	os.Symlink("/proc/self/fd", "/dev/fd")
+	os.Symlink("/proc/self/fd/0", "/dev/stdin")
+	os.Symlink("/proc/self/fd/1", "/dev/stdout")
+	os.Symlink("/proc/self/fd/2", "/dev/stderr")
+
+	return nil
+}
