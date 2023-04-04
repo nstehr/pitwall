@@ -13,11 +13,20 @@ import (
 	"github.com/nstehr/pitwall/terminator/vm"
 	"github.com/nstehr/pitwall/terminator/ziti"
 	zitiSdk "github.com/openziti/sdk-golang/ziti"
+	"github.com/openziti/sdk-golang/ziti/edge"
 	"google.golang.org/protobuf/proto"
 )
 
-func main() {
+type zitiIds struct {
+	vmServiceIds []string
+	vmIdentityId string
+	lis          edge.Listener
+}
 
+var vmZitiMap map[int64]zitiIds
+
+func main() {
+	vmZitiMap = make(map[int64]zitiIds)
 	zitiController, present := os.LookupEnv("ZITI_CONTROLLER")
 	if !present {
 		log.Fatal("Must specify ZITI_CONTROLLER environment variable")
@@ -31,45 +40,54 @@ func main() {
 		log.Fatal("Must specify ZITI_PASS environment variable")
 	}
 
-	stream.RegisterHandler("orchestrator.vm.status.terminator", "orchestrator.vm.status.RUNNING", func(msg []byte) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatal("Error getting hostname", err)
+	}
+
+	// it's convienient to use the broker to receive each this message, but a bit inefficient, since we
+	// are expecting a terminator instance on the same host as the orchestrator.  Could potentially switch
+	// to a more local option (zeroMQ, domain socket, etc)
+	stream.RegisterHandler(fmt.Sprintf("orchestrator.vm.status.terminator.running.%s", hostname), "orchestrator.vm.status.RUNNING", func(msg []byte) {
 		virtualMachine := vm.VM{}
 		err := proto.Unmarshal(msg, &virtualMachine)
 		if err != nil {
 			log.Println("Error unmarshaling VM", err)
 			return
 		}
-		hostname, err := os.Hostname()
-		if err != nil {
-			log.Println("Error getting hostname", err)
-			return
-		}
+
 		if virtualMachine.Host != hostname {
 			return
 		}
 		client, err := ziti.NewClient(zitiController, zitiUser, zitiPass)
 		if err != nil {
 			log.Println("Error getting ziti client:", err)
+			return
 		}
 		err = client.Login()
 		if err != nil {
 			log.Println("Error getting logging into ziti client:", err)
+			return
 		}
 		identityName := fmt.Sprintf("%s-vm-%s", virtualMachine.Owner, virtualMachine.Name)
 		identityRole := fmt.Sprintf("%s-vm", virtualMachine.Owner)
 		id, err := client.CreateIdentity(ziti.Device, identityName, false, []string{identityRole})
 		if err != nil {
 			log.Println("Error creating identity:", err)
+			return
 		}
 		cfg, err := client.EnrollIdentity(id)
 		if err != nil {
 			log.Println("Error enrolling identity:", err)
+			return
 		}
 		// TODO: hardcode ssh as a service, next step would be to iterate from virtualMachine.Services
 		serviceName := fmt.Sprintf("%s-vm-%s-ssh", virtualMachine.Owner, virtualMachine.Name)
 		serviceRole := fmt.Sprintf("%s-vm-services", virtualMachine.Owner)
-		_, err = client.CreateService(serviceName, true, []string{serviceRole})
+		sshServiceId, err := client.CreateService(serviceName, true, []string{serviceRole})
 		if err != nil {
 			log.Println("Error creating service:", err)
+			return
 		}
 
 		bindPolicyName := fmt.Sprintf("%s-vm-bind-policy", virtualMachine.Owner)
@@ -88,6 +106,8 @@ func main() {
 		if err != nil {
 			log.Println("Error creating service policy:", err)
 		}
+
+		// we are expecting the config to be in memory, not very crash safe, TODO: persist (in vault?)
 		ztx := zitiSdk.NewContextWithConfig(cfg)
 		err = ztx.Authenticate()
 		if err != nil {
@@ -98,7 +118,10 @@ func main() {
 		lis, err := ztx.Listen(serviceName)
 		if err != nil {
 			log.Println("failed to listen: ", err)
+			return
 		}
+		// track...TODO: track better?
+		vmZitiMap[virtualMachine.Id] = zitiIds{vmIdentityId: id, vmServiceIds: []string{sshServiceId}, lis: lis}
 
 		go func() {
 			for {
@@ -106,11 +129,51 @@ func main() {
 				conn, err := lis.Accept()
 				if err != nil {
 					log.Println("Error making connection")
+					return
 				}
 				// Handle connections in a new goroutine.
 				go handle(conn, virtualMachine.PrivateIp, 2222)
 			}
 		}()
+	})
+
+	stream.RegisterHandler(fmt.Sprintf("orchestrator.vm.status.terminator.stopped.%s", hostname), "orchestrator.vm.status.STOPPED", func(msg []byte) {
+		virtualMachine := vm.VM{}
+		err := proto.Unmarshal(msg, &virtualMachine)
+		if err != nil {
+			log.Println("Error unmarshaling VM", err)
+			return
+		}
+		ids, ok := vmZitiMap[virtualMachine.Id]
+		if !ok {
+			log.Printf("Not tracking virtual machine: %d\n", virtualMachine.Id)
+		}
+		client, err := ziti.NewClient(zitiController, zitiUser, zitiPass)
+		if err != nil {
+			log.Println("Error getting ziti client:", err)
+			return
+		}
+		err = client.Login()
+		if err != nil {
+			log.Println("Error getting logging into ziti client:", err)
+			return
+		}
+		for _, serviceId := range ids.vmServiceIds {
+			err := client.DeleteService(serviceId)
+			if err != nil {
+				log.Println("Error deleting service: ", err)
+			}
+		}
+		// this should be pushed into the loop
+		lis := ids.lis
+		if lis != nil {
+			lis.Close()
+		}
+	})
+
+	stream.RegisterHandler("orchestrator.terminator.create.identity", "orchestrator.terminator.create.identity", func([]byte) {
+		// creates an identity for the passed in user name, and will respond back with the content
+		// TODO: explore handling this differently (REST, store in vault and just respond success/failure, etc)
 	})
 	// Clean exit.
 	sig := make(chan os.Signal, 1)

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -269,6 +270,12 @@ func (c *Client) CreateService(name string, encryptionRequired bool, attributes 
 	}
 	defer resp.Body.Close()
 	return extractId(resp.Body)
+}
+
+func (c *Client) DeleteService(id string) error {
+	resp, err := c.makeRequest(http.MethodDelete, fmt.Sprintf("edge/management/v1/services/%s", id), nil)
+	log.Println(resp)
+	return err
 }
 
 func (c *Client) CreateServicePolicy(policyType ServicePolicyType, name string, identityRoles []string, serviceRoles []string, semantic ServicePolicySemantic) (string, error) {
