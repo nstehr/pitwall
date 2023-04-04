@@ -4,11 +4,11 @@
   <%= turbo_frame_tag "vm_list" do %>
     <div>
 
-      <div class="d-flex flex-row">
+      <div class="d-flex flex-row flex-wrap">
 
         <% @virtual_machines.each do |virtual_machine| %>
 
-          <div class="card" style="width: 18rem;">
+          <div class="card" style="width: 18rem; margin: 10px">
             <div class="card-body">
               <h5 class="card-title"><%= virtual_machine.name %></h5>
               <h6 class="card-title"><%= virtual_machine.image %></h6>
