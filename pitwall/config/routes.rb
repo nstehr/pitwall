@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   namespace :api do 
       resources :virtual_machines
       resources :orchestrators
+      post 'profile/ztIdentity', to: 'users/profile#create_zt_identity'
   end
   resources :virtual_machines
   resources :orchestrators

@@ -28,8 +28,8 @@ class ApiTokenStrategy < Warden::Strategies::Base
     def get_public_key
         # this key needs to be fetched from keycloak
         url =  Rails.configuration.x.keycloak.realm_api
-        response = Net::HTTP.get_response(URI.parse(url))
-        JSON.parse(response.body)["public_key"] if response.code == "200"
+        response = HTTParty.get(url)
+        response["public_key"] if response.code == 200
     end
   
     def api_token

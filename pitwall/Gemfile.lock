@@ -141,6 +141,9 @@ GEM
       activesupport (>= 5.0)
     google-protobuf (3.21.9)
     hashie (5.0.0)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     importmap-rails (1.1.5)
@@ -367,6 +370,7 @@ DEPENDENCIES
   erb_lint
   font-awesome-sass (~> 6.2.1)
   google-protobuf
+  httparty
   importmap-rails
   jbuilder
   jwt

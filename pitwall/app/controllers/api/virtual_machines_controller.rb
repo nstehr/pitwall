@@ -1,15 +1,22 @@
 class Api::VirtualMachinesController < Api::ApiController
     before_action :authenticate_user!
     def index
-        @virtual_machines = VirtualMachine.all 
-        render json: @virtual_machines
+        if params[:name].present?
+          @virtual_machines = VirtualMachine.by_user(current_user).where(name: params[:name])
+          # include the services when search by name, there should be only one
+          render json: @virtual_machines[0], :include => :services
+        else
+          @virtual_machines = VirtualMachine.all 
+          render json: @virtual_machines
+        end
+        
     end 
 
     def show
         @virtual_machine = VirtualMachine.find(params[:id])
-        render json: @virtual_machine
-    end 
-
+        render json: @virtual_machine, :include => :services
+    end
+   
     def create
         placer = VirtualMachinePlacer.new
        

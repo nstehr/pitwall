@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_11_194123) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_07_011623) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,6 +31,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_11_194123) do
     t.integer "virtual_machines_count"
     t.string "health_check_url"
     t.index ["name"], name: "index_orchestrators_on_name", unique: true
+  end
+
+  create_table "services", force: :cascade do |t|
+    t.text "name"
+    t.integer "port"
+    t.boolean "private"
+    t.string "protocol"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "virtual_machine_id", null: false
+    t.index ["virtual_machine_id"], name: "index_services_on_virtual_machine_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -65,6 +76,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_11_194123) do
   end
 
   add_foreign_key "identities", "users"
+  add_foreign_key "services", "virtual_machines"
   add_foreign_key "virtual_machines", "orchestrators"
   add_foreign_key "virtual_machines", "users"
 end

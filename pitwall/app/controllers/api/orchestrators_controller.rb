@@ -1,4 +1,5 @@
 class Api::OrchestratorsController < Api::ApiController
+    before_action :authenticate_user!
     def index
         @orchestrators = Orchestrator.all 
         render json: @orchestrators

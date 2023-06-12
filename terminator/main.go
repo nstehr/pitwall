@@ -23,6 +23,9 @@ type zitiIds struct {
 	lis          edge.Listener
 }
 
+// TODO: Refactor to a "ProxiedVM/ZitiedVM struct" with a manager that can handle the
+// service creation, tracking, proxying, deleting instead of having it in main.
+
 var vmZitiMap map[int64]zitiIds
 
 func main() {
@@ -171,10 +174,6 @@ func main() {
 		}
 	})
 
-	stream.RegisterHandler("orchestrator.terminator.create.identity", "orchestrator.terminator.create.identity", func([]byte) {
-		// creates an identity for the passed in user name, and will respond back with the content
-		// TODO: explore handling this differently (REST, store in vault and just respond success/failure, etc)
-	})
 	// Clean exit.
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)

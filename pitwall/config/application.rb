@@ -29,5 +29,9 @@ module Pitwall
     config.x.rabbitmq.username = ENV['AMQP_USER']
     config.x.rabbitmq.password = ENV['AMQP_PASSWORD']
     config.x.rabbitmq.vhost = ENV['AMQP_VHOST']
+
+    config.x.ziti.controller = ENV['ZITI_CONTROLLER']
+    config.x.ziti.user = ENV['ZITI_USER']
+    config.x.ziti.pass = ENV['ZITI_PASS']
   end
 end

@@ -26,6 +26,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :name, :string, 1
       optional :port, :int64, 2
       optional :private, :bool, 3
+      optional :protocol, :string, 4
     end
     add_message "vm.VM" do
       optional :id, :int64, 1

@@ -124,6 +124,12 @@ func (m *Manager) onVMCreate(req *CreateVMRequest) {
 	vm.Status = "RUNNING"
 	sendStatusUpdate(ctx, &vm)
 
+	// for now only add in SSH as a service
+	// naming convention: nstehr-vm-gravelly-courtney-ssh
+	services := []*Service{&Service{Name: fmt.Sprintf("%s-vm-%s-ssh", vm.Owner, vm.Name), Port: 2222, Private: true, Protocol: "ssh"}}
+	vm.Services = services
+	sendStatusUpdate(ctx, &vm)
+
 	// not sure if this is the way, but Wait()
 	// seems to be the way I can catch if the VM is terminated on the host
 	go func() {
