@@ -48,4 +48,10 @@ func main() {
 		log.Println(err)
 	}
 
+	terminatorDir := project.Directory("terminator")
+	err = buildTerminator(ctx, client, terminatorDir, platform)
+	if err != nil {
+		log.Println(err)
+	}
+
 }
