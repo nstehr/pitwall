@@ -48,8 +48,8 @@ PITWALL_DB_HOST=
 PITWALL_DB_USER=
 PITWALL_DB_PASSWORD=
 ZITI_CONTROLLER=
-ZITI_USER=admin=
-ZITI_PASS=admin=
+ZITI_USER=
+ZITI_PASS=
 ```
 - rake db:create
 - rake db:migrate
@@ -68,8 +68,8 @@ The following environment variables need to be set:
 ```
 RABBIT_SERVER=
 ZITI_CONTROLLER=
-ZITI_USER=admin=
-ZITI_PASS=admin=
+ZITI_USER=
+ZITI_PASS=
 ```
 
 The pitwall and powerunit binaries need to be in the same location on the host, and the firecracker binary needs to be on the path.  The terminator binary needs to be run on the each host that has the pitwall binary managing VMs
