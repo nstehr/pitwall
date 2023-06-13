@@ -62,6 +62,10 @@ func main() {
 		if virtualMachine.Host != hostname {
 			return
 		}
+		// don't bother if there are no services to proxy
+		if virtualMachine.Services == nil || len(virtualMachine.Services) == 0 {
+			return
+		}
 		client, err := ziti.NewClient(zitiController, zitiUser, zitiPass)
 		if err != nil {
 			log.Println("Error getting ziti client:", err)
@@ -84,8 +88,21 @@ func main() {
 			log.Println("Error enrolling identity:", err)
 			return
 		}
-		// TODO: hardcode ssh as a service, next step would be to iterate from virtualMachine.Services
-		serviceName := fmt.Sprintf("%s-vm-%s-ssh", virtualMachine.Owner, virtualMachine.Name)
+
+		// TODO: for now, just look to proxy the ssh service, but we should eventually iterate all
+		var sshService *vm.Service
+		for _, s := range virtualMachine.Services {
+			if s.Protocol == "ssh" {
+				sshService = s
+				break
+			}
+		}
+		if sshService == nil {
+			log.Println("no ssh service found")
+			return
+		}
+
+		serviceName := sshService.Name
 		serviceRole := fmt.Sprintf("%s-vm-services", virtualMachine.Owner)
 		sshServiceId, err := client.CreateService(serviceName, true, []string{serviceRole})
 		if err != nil {
@@ -135,7 +152,7 @@ func main() {
 					return
 				}
 				// Handle connections in a new goroutine.
-				go handle(conn, virtualMachine.PrivateIp, 2222)
+				go handle(conn, virtualMachine.PrivateIp, int(sshService.Port))
 			}
 		}()
 	})
