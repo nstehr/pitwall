@@ -5,10 +5,9 @@ class VirtualMachine < ApplicationRecord
     validates :public_key, public_key: true
     belongs_to :orchestrator, counter_cache: true, optional: true
     belongs_to :user, counter_cache: true, optional: true
-    has_many :services
+    has_many :services, dependent: :destroy
     after_initialize :set_default_name
 
-    # scope :costs_more_than, ->(amount) { where('price > ?', amount) }
     scope :by_user, ->(user) {where('user_id = ?', user.id)}
 
     def set_default_name
