@@ -54,4 +54,10 @@ func main() {
 		log.Println(err)
 	}
 
+	cliDir := project.Directory("cli")
+	err = buildCli(ctx, client, cliDir, platform)
+	if err != nil {
+		log.Println(err)
+	}
+
 }
