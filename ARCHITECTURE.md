@@ -50,3 +50,12 @@ C4Context
 
       UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
+
+# Overview
+A pitwall deployment is made up of three main layers:
+ - A web based control plane
+ - Infrastructure
+ - Host(s) for running the microVMs
+
+# Component Communication
+Inter-component communication is mostly asynchronous via rabbitMQ using a topic based exchange.

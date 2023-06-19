@@ -11,7 +11,7 @@ Tested with: Firecracker v1.1.0
 - CLI: a go based cli for interacting with the pitwall API
 - Terminator: a go based proxy for allowing access to the VM via an openziti overlay network
 
-NOTE: For details of how these components work together see ARCHITECTURE.md
+NOTE: For details of how these components work together see [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### Infrastructure
 - Rabbitmq: used for communication between the pitwall app and the orchestrators
