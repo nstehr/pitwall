@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -64,6 +65,18 @@ func Execute() {
 }
 
 func init() {
+	var homeDir string
+	defaultLocation := ".pitwall"
+	// should maybe move this logic out of the init
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Println("Could not find home directory:", err)
+		log.Println("Default to current directory for config file")
+	}
+	if len(homeDir) != 0 {
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", ".pitwall.json", "")
+		defaultLocation = fmt.Sprintf("%s%c%s", homeDir, os.PathSeparator, defaultLocation)
+	}
+	os.MkdirAll(defaultLocation, 0777)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", fmt.Sprintf("%s%cpitwall.json", defaultLocation, os.PathSeparator), "")
 }
